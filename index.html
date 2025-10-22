@@ -1,0 +1,3874 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReadingTurtle</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            margin-bottom: 20px;
+            padding: 15px 0;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header-main {
+            flex: 1;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .auth-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .user-info {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .auth-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.5);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .auth-btn:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.8);
+        }
+
+        .stats-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        .stats-toggle-btn {
+            display: none;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.5);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .stats-toggle-btn:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.8);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .search-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        .search-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-type-select {
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: white;
+            cursor: pointer;
+        }
+
+        .search-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .clear-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        /* 레벨 필터 */
+        .level-filters {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .level-filter-group {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .filter-label {
+            font-weight: bold;
+            color: #333;
+            font-size: 0.9rem;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .filter-reset-btn {
+            background: none;
+            border: none;
+            color: #667eea;
+            font-size: 0.85rem;
+            cursor: pointer;
+            padding: 2px 8px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .filter-reset-btn:hover {
+            background: #e7e9ff;
+        }
+
+        /* 듀얼 썸 레인지 슬라이더 */
+        .dual-range-container {
+            position: relative;
+            height: 40px;
+            margin: 10px 0;
+        }
+
+        .range-slider {
+            position: absolute;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+            pointer-events: none;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            pointer-events: all;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            z-index: 10;
+        }
+
+        .range-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            background: #5568d3;
+        }
+
+        .range-slider::-moz-range-thumb {
+            pointer-events: all;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+
+        .range-slider::-moz-range-thumb:hover {
+            transform: scale(1.2);
+            background: #5568d3;
+        }
+
+        .range-track {
+            position: absolute;
+            height: 6px;
+            background: #e1e5e9;
+            border-radius: 3px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 100%;
+        }
+
+        .range-progress {
+            position: absolute;
+            height: 6px;
+            background: #667eea;
+            border-radius: 3px;
+            top: 50%;
+            transform: translateY(-50%);
+            transition: all 0.1s ease;
+        }
+
+        .range-values {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #667eea;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        /* 필터 옵션 버튼 그룹 */
+        .filter-option-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #e1e5e9;
+            background: white;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #666;
+        }
+
+        .filter-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+            font-weight: bold;
+        }
+
+        .filter-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* 필터 결과 카운트 */
+        .filter-count {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            background: white;
+            border-radius: 20px;
+            border: 2px solid #667eea;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .filter-count .count-number {
+            color: #667eea;
+            font-size: 1.1rem;
+        }
+
+        .dual-range-container {
+            position: relative;
+            padding: 10px 0;
+        }
+
+        .dual-range-slider {
+            position: relative;
+            height: 6px;
+            background: #e1e5e9;
+            border-radius: 3px;
+            margin: 10px 0;
+        }
+
+        .dual-range-track {
+            position: absolute;
+            height: 100%;
+            background: #667eea;
+            border-radius: 3px;
+        }
+
+        .dual-range-inputs {
+            position: relative;
+        }
+
+        .dual-range-inputs input {
+            position: absolute;
+            width: 100%;
+            height: 6px;
+            background: none;
+            pointer-events: none;
+            -webkit-appearance: none;
+            margin: 0;
+            top: 0;
+        }
+
+        .dual-range-inputs input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            pointer-events: all;
+            z-index: 10;
+            position: relative;
+        }
+
+        .dual-range-inputs input::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+            pointer-events: all;
+        }
+
+        .results-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .results-title {
+            font-size: 1.5rem;
+            color: #333;
+        }
+
+        .results-count {
+            background: #e9ecef;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .book-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .book-card {
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .book-card:hover {
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .book-image-container {
+            width: 100%;
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .book-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 4px;
+        }
+
+        .book-image-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+            color: #6c757d;
+            font-size: 3rem;
+        }
+
+        .book-isbn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        .book-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+            line-height: 1.3;
+        }
+
+        .book-info {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 5px 10px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+
+        .book-info-label {
+            font-weight: bold;
+            color: #666;
+        }
+
+        .book-info-value {
+            color: #333;
+        }
+
+        .ar-level {
+            background: #28a745;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            display: inline-block;
+        }
+
+        .quiz-available {
+            background: #28a745;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            display: inline-block;
+        }
+
+        .quiz-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .quiz-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .quiz-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+
+        /* 단어 보기 버튼 */
+        .book-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .words-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            flex: 1;
+            transition: all 0.3s ease;
+        }
+
+        .words-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .words-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+
+        /* 슬라이드 패널 오버레이 */
+        .slide-panel-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 998;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .slide-panel-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+
+        /* 슬라이드 패널 */
+        .slide-panel {
+            position: fixed;
+            top: 0;
+            right: -600px;
+            width: 600px;
+            max-width: 90vw;
+            height: 100%;
+            background: white;
+            box-shadow: -5px 0 25px rgba(0, 0, 0, 0.2);
+            z-index: 999;
+            overflow-y: auto;
+            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .slide-panel.active {
+            right: 0;
+        }
+
+        .slide-panel-header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            padding: 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .slide-panel-header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .slide-panel-title {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .slide-panel-subtitle {
+            margin: 5px 0 0 0;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .slide-panel-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            margin-left: 15px;
+        }
+
+        .slide-panel-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .slide-panel-body {
+            padding: 25px;
+        }
+
+        /* 퀴즈 모달 오버레이 */
+        .quiz-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .quiz-modal-overlay.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 1;
+        }
+
+        /* 퀴즈 모달 */
+        .quiz-modal {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 900px;
+            max-height: 85vh;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .quiz-modal-overlay.active .quiz-modal {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+
+        .quiz-modal-header {
+            padding: 30px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .quiz-modal-title {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .quiz-modal-subtitle {
+            margin: 8px 0 0 0;
+            font-size: 0.95rem;
+            opacity: 0.95;
+        }
+
+        .quiz-modal-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            font-size: 1.8rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            margin-left: 20px;
+        }
+
+        .quiz-modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .quiz-modal-body {
+            padding: 30px;
+            overflow-y: auto;
+            max-height: calc(85vh - 120px);
+        }
+
+        .quizzes-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .words-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .word-item {
+            display: flex;
+            gap: 15px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border: 2px solid #e1e5e9;
+            transition: all 0.3s ease;
+        }
+
+        .word-item:hover {
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.15);
+            transform: translateX(-5px);
+        }
+
+        .word-number {
+            flex-shrink: 0;
+            width: 35px;
+            height: 35px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .word-content {
+            flex: 1;
+        }
+
+        .word-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .word-definition {
+            color: #34495e;
+            line-height: 1.6;
+            margin-bottom: 8px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+
+        .word-definition strong {
+            color: #667eea;
+        }
+
+        .word-example {
+            color: #5a6c7d;
+            line-height: 1.6;
+            font-style: italic;
+            padding: 10px;
+            background: #e8f4f8;
+            border-radius: 6px;
+            border-left: 3px solid #17a2b8;
+        }
+
+        .word-example strong {
+            color: #17a2b8;
+            font-style: normal;
+        }
+
+        .no-words {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .no-words p {
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+        .quiz-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .quiz-header {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e1e5e9;
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .quiz-book-image-container {
+            width: 150px;
+            height: 200px;
+            flex-shrink: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #e1e5e9;
+        }
+
+        .quiz-book-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .quiz-book-image-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+            color: #6c757d;
+            font-size: 3rem;
+        }
+
+        .quiz-book-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .quiz-book-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .quiz-book-info {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .quiz-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .quiz-number {
+            background: #667eea;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        .quiz-question {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        .quiz-choices {
+            margin-bottom: 15px;
+        }
+
+        .quiz-choice {
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            background: white;
+            border: 2px solid #e1e5e9;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .quiz-choice:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+            transform: translateX(5px);
+        }
+
+        .quiz-choice.selected {
+            background: #e7f3ff;
+            border-color: #007bff;
+            font-weight: bold;
+        }
+
+        .quiz-choice.correct {
+            background: #d4edda !important;
+            border-color: #28a745 !important;
+            color: #155724;
+            font-weight: bold;
+        }
+
+        .quiz-choice.incorrect {
+            background: #f8d7da !important;
+            border-color: #dc3545 !important;
+            color: #721c24;
+            font-weight: bold;
+        }
+
+        .quiz-choice.disabled {
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        .quiz-answer {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+            font-weight: bold;
+            color: #0056b3;
+            margin-top: 15px;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+
+        .quiz-answer.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .quiz-result {
+            margin-top: 10px;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-weight: bold;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+
+        .quiz-result.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .quiz-result.correct {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .quiz-result.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f1b2b7;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #dc3545;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* 모바일 최적화 */
+        @media (max-width: 768px) {
+            body {
+                padding-bottom: 20px;
+            }
+
+            .container {
+                padding: 10px;
+            }
+
+            header {
+                margin-bottom: 20px;
+            }
+
+            header h1 {
+                font-size: 1.8rem;
+                margin-bottom: 5px;
+            }
+
+            header p {
+                font-size: 0.9rem;
+            }
+
+            /* 통계를 하단으로 이동 */
+            .stats-section {
+                order: 10;
+                padding: 15px;
+                margin-top: 30px;
+            }
+
+            .stats-toggle-btn {
+                display: block;
+            }
+
+            .stats-grid {
+                display: none;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .stats-grid.show {
+                display: grid;
+            }
+
+            .stat-card {
+                padding: 15px;
+            }
+
+            .stat-number {
+                font-size: 1.5rem;
+            }
+
+            .stat-label {
+                font-size: 0.8rem;
+            }
+
+            .search-section {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+
+            .search-section h2 {
+                font-size: 1.3rem;
+                margin-bottom: 15px !important;
+            }
+
+            .search-container {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .search-input,
+            .search-type-select,
+            .search-btn,
+            .clear-btn {
+                width: 100%;
+                font-size: 1rem;
+                padding: 12px;
+            }
+
+            .results-section {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+
+            .results-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .results-title {
+                font-size: 1.2rem;
+            }
+
+            .book-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .book-card {
+                padding: 15px;
+            }
+
+            .book-title {
+                font-size: 1.1rem;
+            }
+
+            .book-info {
+                font-size: 0.85rem;
+                gap: 3px 8px;
+            }
+
+            .quiz-section {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+
+            .quiz-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .quiz-book-image-container {
+                width: 120px;
+                height: 160px;
+                margin: 0 auto;
+            }
+
+            .quiz-book-title {
+                font-size: 1.1rem;
+            }
+
+            .quiz-book-info {
+                flex-direction: column;
+                gap: 5px;
+                font-size: 0.85rem;
+            }
+
+            .quiz-item {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+
+            .quiz-question {
+                font-size: 1rem;
+                line-height: 1.3;
+            }
+
+            .quiz-choice {
+                padding: 10px 12px;
+                font-size: 0.9rem;
+                margin-bottom: 8px;
+            }
+
+            .quiz-choice:hover {
+                transform: translateX(3px);
+            }
+
+            .quiz-answer {
+                padding: 12px;
+                font-size: 0.9rem;
+            }
+
+            .quiz-result {
+                padding: 8px 12px;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 1.5rem;
+            }
+
+            header p {
+                font-size: 0.85rem;
+            }
+
+            .stat-number {
+                font-size: 1.3rem;
+            }
+
+            .book-title {
+                font-size: 1rem;
+            }
+
+            .quiz-question {
+                font-size: 0.95rem;
+            }
+        }
+
+        /* 읽는 중 섹션 - 컴팩트 */
+        .reading-now-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        .reading-now-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .reading-now-title {
+            font-size: 1.2rem;
+            color: #333;
+            font-weight: bold;
+        }
+
+        /* 읽는 중 책 - 가로 스크롤 */
+        .reading-now-grid {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .reading-now-grid::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .reading-now-grid::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .reading-now-grid::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 3px;
+        }
+
+        .reading-now-grid::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* 컴팩트 북 카드 */
+        .compact-book-card {
+            min-width: 200px;
+            max-width: 200px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .compact-book-card:hover {
+            border-color: #667eea;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .compact-book-image {
+            width: 100%;
+            height: 120px;
+            object-fit: contain;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            background: white;
+        }
+
+        .compact-book-title {
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+            line-height: 1.2;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .compact-status-buttons {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 6px;
+        }
+
+        .compact-status-btn {
+            flex: 1;
+            padding: 4px 6px;
+            border: 1px solid #e1e5e9;
+            border-radius: 4px;
+            background: white;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .compact-status-btn:hover {
+            border-color: #667eea;
+        }
+
+        .compact-status-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+            font-weight: bold;
+        }
+
+        .compact-action-buttons {
+            display: flex;
+            gap: 5px;
+            margin-top: 8px;
+        }
+
+        .compact-quiz-btn {
+            flex: 1;
+            padding: 6px;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .compact-quiz-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .compact-quiz-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .compact-words-btn {
+            flex: 1;
+            padding: 6px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .compact-words-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .compact-words-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .view-all-btn {
+            background: #667eea;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .view-all-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        /* 독서 상태 버튼 */
+        .reading-status-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .status-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            background: white;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .status-btn:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .status-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+            font-weight: bold;
+        }
+
+        .status-btn.started {
+            border-color: #ffc107;
+        }
+
+        .status-btn.started.active {
+            background: #ffc107;
+            border-color: #ffc107;
+        }
+
+        .status-btn.reading {
+            border-color: #17a2b8;
+        }
+
+        .status-btn.reading.active {
+            background: #17a2b8;
+            border-color: #17a2b8;
+        }
+
+        .status-btn.completed {
+            border-color: #28a745;
+        }
+
+        .status-btn.completed.active {
+            background: #28a745;
+            border-color: #28a745;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .status-badge.started {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-badge.reading {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-badge.completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .reading-dates {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #e1e5e9;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-main">
+                <h1><a href="#" onclick="goToHome(); return false;" style="color: white; text-decoration: none; cursor: pointer;">📚 Read & Check</a></h1>
+            </div>
+            <div class="auth-controls" id="authControls">
+                <!-- JavaScript로 동적 생성 -->
+            </div>
+        </header>
+
+        <!-- 읽는 중인 책 섹션 (로그인 시 홈 화면) -->
+        <div id="readingNowSection" class="reading-now-section hidden">
+            <div class="reading-now-header">
+                <h2 class="reading-now-title">📖 읽는 중인 책</h2>
+            </div>
+            <div id="readingNowGrid" class="reading-now-grid"></div>
+        </div>
+
+        <!-- 검색 섹션 -->
+        <div class="search-section" id="searchSection">
+            <h2 style="margin-bottom: 20px; color: #333;">🔍 도서 검색</h2>
+            <div class="search-container">
+                <input
+                    type="text"
+                    id="searchInput"
+                    class="search-input"
+                    placeholder="ISBN, 제목, 저자, 시리즈로 검색하세요..."
+                    autocomplete="off"
+                >
+                <select id="searchType" class="search-type-select">
+                    <option value="all">전체 검색</option>
+                    <option value="isbn">ISBN</option>
+                    <option value="title">제목</option>
+                    <option value="author">저자</option>
+                    <option value="series">시리즈</option>
+                </select>
+                <button id="searchBtn" class="search-btn">검색</button>
+                <button id="clearBtn" class="clear-btn">초기화</button>
+            </div>
+
+            <!-- 레벨 필터 -->
+            <div class="level-filters">
+                <!-- 첫 번째 행: 레벨 필터 -->
+                <div class="filter-row">
+                    <div class="level-filter-group">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <label class="filter-label">BT Level</label>
+                            <button class="filter-reset-btn" onclick="resetBTLevelFilter()">전체</button>
+                        </div>
+                        <div class="dual-range-container">
+                            <div class="range-track"></div>
+                            <div class="range-progress" id="btLevelProgress"></div>
+                            <input type="range" id="btLevelMin" class="range-slider" min="0" max="10" value="0" step="0.5" oninput="updateBTLevelRange()">
+                            <input type="range" id="btLevelMax" class="range-slider" min="0" max="10" value="10" step="0.5" oninput="updateBTLevelRange()">
+                        </div>
+                        <div class="range-values" id="btLevelValues">0.0 ~ 10.0</div>
+                    </div>
+
+                    <div class="level-filter-group">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <label class="filter-label">Lexile</label>
+                            <button class="filter-reset-btn" onclick="resetLexileFilter()">전체</button>
+                        </div>
+                        <div class="dual-range-container">
+                            <div class="range-track"></div>
+                            <div class="range-progress" id="lexileProgress"></div>
+                            <input type="range" id="lexileMin" class="range-slider" min="0" max="1500" value="0" step="50" oninput="updateLexileRange()">
+                            <input type="range" id="lexileMax" class="range-slider" min="0" max="1500" value="1500" step="50" oninput="updateLexileRange()">
+                        </div>
+                        <div class="range-values" id="lexileValues">0 ~ 1500</div>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <label class="filter-label">조건</label>
+                        <div class="filter-option-group">
+                            <button class="filter-btn active" id="levelConditionAND" onclick="setLevelCondition('AND')">AND</button>
+                            <button class="filter-btn" id="levelConditionOR" onclick="setLevelCondition('OR')">OR</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 두 번째 행: 추가 필터 -->
+                <div class="filter-row">
+                    <div style="flex: 1; min-width: 200px;">
+                        <label class="filter-label">장르</label>
+                        <div class="filter-option-group">
+                            <button class="filter-btn active" id="genreAll" onclick="setGenre('all')">전체</button>
+                            <button class="filter-btn" id="genreFiction" onclick="setGenre('fiction')">Fiction</button>
+                            <button class="filter-btn" id="genreNonfiction" onclick="setGenre('nonfiction')">Nonfiction</button>
+                        </div>
+                    </div>
+
+                    <div style="flex: 1; min-width: 150px;">
+                        <label class="filter-label">퀴즈</label>
+                        <div class="filter-option-group">
+                            <button class="filter-btn active" id="quizAll" onclick="setQuizFilter('all')">전체</button>
+                            <button class="filter-btn" id="quizOnly" onclick="setQuizFilter('only')">있음만</button>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; align-items: flex-end;">
+                        <div class="filter-count" id="filterCount" style="display: none;">
+                            <span>매칭:</span>
+                            <span class="count-number" id="countNumber">0</span>
+                            <span>권</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 검색 결과 섹션 -->
+        <div id="resultsSection" class="results-section hidden">
+            <div class="results-header">
+                <h2 class="results-title" id="resultsTitle">검색 결과</h2>
+                <span class="results-count" id="resultsCount">0개 결과</span>
+            </div>
+            <div id="resultsLoading" class="loading hidden">검색 중입니다...</div>
+            <div id="resultsError" class="error hidden"></div>
+            <div id="bookGrid" class="book-grid"></div>
+        </div>
+
+        <!-- 퀴즈 섹션 -->
+        <div id="quizSection" class="quiz-section hidden">
+            <div class="quiz-header"></div>
+            <div id="quizLoading" class="loading hidden">퀴즈를 불러오는 중입니다...</div>
+            <div id="quizError" class="error hidden"></div>
+            <div id="quizList"></div>
+        </div>
+
+        <!-- 마이페이지 (상세 기록) -->
+        <div id="myPageSection" class="results-section hidden">
+            <div class="results-header">
+                <h2 class="results-title">📚 내 독서 기록</h2>
+                <button onclick="goToHome()" class="clear-btn">홈으로</button>
+            </div>
+
+            <!-- 독서 통계 -->
+            <div id="myStats" style="margin-bottom: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;"></div>
+
+            <!-- 단어 공부하기 버튼 -->
+            <div style="margin-bottom: 20px; text-align: center;">
+                <button onclick="goToWordStudy()" class="search-btn" style="padding: 12px 30px; font-size: 1rem; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    📖 단어 공부하기
+                </button>
+            </div>
+
+            <!-- 필터 버튼 -->
+            <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                <h3 style="margin-right: 10px; color: #333; font-size: 1.1rem;">전체 독서 기록</h3>
+                <button onclick="filterMyBooks('all')" class="status-btn active" id="filterAll">전체</button>
+                <button onclick="filterMyBooks('started')" class="status-btn started" id="filterStarted">읽기 시작</button>
+                <button onclick="filterMyBooks('reading')" class="status-btn reading" id="filterReading">읽는 중</button>
+                <button onclick="filterMyBooks('completed')" class="status-btn completed" id="filterCompleted">읽음</button>
+            </div>
+
+            <div id="myBooksGrid" class="book-grid"></div>
+        </div>
+
+        <!-- 단어 학습 화면 -->
+        <div id="wordStudySection" class="results-section hidden">
+            <div class="results-header">
+                <h2 class="results-title">📖 단어 공부하기</h2>
+                <button onclick="goToMyPage()" class="clear-btn">마이페이지로</button>
+            </div>
+
+            <!-- 레벨 선택 및 옵션 -->
+            <div style="background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                <!-- 정렬 기준 선택 -->
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; color: #333; font-weight: bold; margin-bottom: 10px;">📊 난이도 기준:</label>
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <button onclick="changeWordSortBy('bt_level')" class="status-btn active" id="sortByBT">BT Level</button>
+                        <button onclick="changeWordSortBy('lexile')" class="status-btn" id="sortByLexile">Lexile</button>
+                    </div>
+                </div>
+
+                <!-- 완료 상태 필터 (로그인한 경우에만 표시) -->
+                <div id="completionFilterSection" style="margin-bottom: 20px; display: none;">
+                    <label style="display: block; color: #333; font-weight: bold; margin-bottom: 10px;">✅ 학습 상태:</label>
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <button onclick="changeCompletionFilter('all')" class="status-btn active" id="filterAll">전체</button>
+                        <button onclick="changeCompletionFilter('incomplete')" class="status-btn" id="filterIncomplete">미완료</button>
+                        <button onclick="changeCompletionFilter('completed')" class="status-btn" id="filterCompleted">완료</button>
+                    </div>
+                </div>
+
+                <!-- BT Level 선택 -->
+                <div id="btLevelRangeSection" style="margin-bottom: 20px;">
+                    <label style="display: block; color: #333; font-weight: bold; margin-bottom: 10px;">🎯 BT Level:</label>
+                    <div style="position: relative; padding: 10px 0;">
+                        <input type="range" id="studyBTLevel" class="range-slider" min="0" max="10" value="1.5" step="0.1"
+                               oninput="updateStudyBTLevel()"
+                               style="width: 100%; -webkit-appearance: none; appearance: none; height: 6px; border-radius: 3px; background: #e1e5e9; outline: none;">
+                        <div id="studyBTLevelValue" style="margin-top: 10px; font-size: 1rem; font-weight: bold; color: #667eea; text-align: center;">
+                            BT Level: 1.5
+                        </div>
+                    </div>
+                    <div style="margin-top: 10px; font-size: 0.85rem; color: #999; text-align: center;">
+                        초급(0-3), 중급(3-7), 고급(7-10)
+                    </div>
+                </div>
+
+                <!-- Lexile 선택 -->
+                <div id="lexileRangeSection" style="margin-bottom: 20px; display: none;">
+                    <label style="display: block; color: #333; font-weight: bold; margin-bottom: 10px;">🎯 Lexile:</label>
+                    <div style="position: relative; padding: 10px 0;">
+                        <input type="range" id="studyLexile" class="range-slider" min="0" max="1500" value="300" step="50"
+                               oninput="updateStudyLexile()"
+                               style="width: 100%; -webkit-appearance: none; appearance: none; height: 6px; border-radius: 3px; background: #e1e5e9; outline: none;">
+                        <div id="studyLexileValue" style="margin-top: 10px; font-size: 1rem; font-weight: bold; color: #667eea; text-align: center;">
+                            Lexile: 300
+                        </div>
+                    </div>
+                    <div style="margin-top: 10px; font-size: 0.85rem; color: #999; text-align: center;">
+                        초급(0-500), 중급(500-800), 고급(800-1500)
+                    </div>
+                </div>
+
+                <!-- 시험 보기 버튼 -->
+                <div style="text-align: center; margin-top: 15px;">
+                    <button onclick="goToWordQuiz()" class="search-btn" style="padding: 10px 25px; background: linear-gradient(135deg, #f5af19 0%, #f12711 100%);">
+                        ✍️ 단어 시험 보기
+                    </button>
+                </div>
+            </div>
+
+            <!-- 학습 진행 상태 -->
+            <div id="wordStudyStats" style="margin-bottom: 20px; padding: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; text-align: center;">
+                    <div>
+                        <div style="font-size: 0.9rem; color: #666; margin-bottom: 5px;">전체 단어</div>
+                        <div id="totalStudyWords" style="font-size: 1.5rem; font-weight: bold; color: #667eea;">-</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.9rem; color: #666; margin-bottom: 5px;">현재 진행</div>
+                        <div id="currentProgress" style="font-size: 1.5rem; font-weight: bold; color: #f5576c;">-</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.9rem; color: #666; margin-bottom: 5px;">정렬 기준</div>
+                        <div id="currentSortBy" style="font-size: 1.5rem; font-weight: bold; color: #26a69a;">BT Level</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 단어 카드 목록 -->
+            <div id="wordStudyLoading" class="loading hidden">단어를 불러오는 중입니다...</div>
+            <div id="wordStudyError" class="error hidden"></div>
+            <div id="wordCardsList"></div>
+
+            <!-- 더 보기 버튼 -->
+            <div id="loadMoreContainer" style="text-align: center; margin-top: 20px; display: none;">
+                <button onclick="loadMoreWords()" class="search-btn" style="padding: 10px 30px;">더 보기</button>
+            </div>
+        </div>
+
+        <!-- 단어 시험 화면 -->
+        <div id="wordQuizSection" class="results-section hidden">
+            <div class="results-header">
+                <h2 class="results-title">✍️ 단어 시험</h2>
+                <button onclick="goToWordStudy()" class="clear-btn">단어 공부로</button>
+            </div>
+
+            <!-- 시험 설정 (시험 시작 전) -->
+            <div id="quizSetup" style="background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                <h3 style="color: #333; margin-bottom: 20px;">시험 범위 설정</h3>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; color: #666; margin-bottom: 10px; font-weight: bold;">BT Level 범위:</label>
+                    <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                        <div>
+                            <label style="color: #666; margin-right: 5px;">최소:</label>
+                            <input type="number" id="btLevelMin" value="0" min="0" max="55" step="0.1"
+                                   style="width: 80px; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        </div>
+                        <div>
+                            <label style="color: #666; margin-right: 5px;">최대:</label>
+                            <input type="number" id="btLevelMax" value="3" min="0" max="55" step="0.1"
+                                   style="width: 80px; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        </div>
+                    </div>
+                    <div style="margin-top: 10px; font-size: 0.85rem; color: #999;">
+                        추천: 초급(0-3), 중급(3-7), 고급(7-15)
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; color: #666; margin-bottom: 10px; font-weight: bold;">문제 수:</label>
+                    <select id="questionCount" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 150px;">
+                        <option value="5">5문제</option>
+                        <option value="10" selected>10문제</option>
+                        <option value="15">15문제</option>
+                        <option value="20">20문제</option>
+                    </select>
+                </div>
+
+                <button onclick="startQuiz()" class="search-btn" style="width: 100%; padding: 12px; font-size: 1.1rem;">
+                    시험 시작하기
+                </button>
+            </div>
+
+            <!-- 시험 진행 화면 -->
+            <div id="quizProgress" class="hidden">
+                <!-- 진행 상태 -->
+                <div style="background: white; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                        <div>
+                            <span style="color: #666;">진행:</span>
+                            <span id="quizProgressText" style="font-weight: bold; color: #667eea; margin-left: 5px;">1 / 10</span>
+                        </div>
+                        <div>
+                            <span style="color: #666;">정답:</span>
+                            <span id="quizScoreText" style="font-weight: bold; color: #26a69a; margin-left: 5px;">0 / 0</span>
+                        </div>
+                        <div>
+                            <span style="color: #666;">정답률:</span>
+                            <span id="quizAccuracyText" style="font-weight: bold; color: #f5576c; margin-left: 5px;">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 문제 카드 -->
+                <div id="quizQuestionCard" style="background: white; border-radius: 8px; padding: 25px; margin-bottom: 20px; box-shadow: 0 3px 15px rgba(0,0,0,0.1);"></div>
+            </div>
+
+            <!-- 시험 결과 화면 -->
+            <div id="quizResult" class="hidden">
+                <div style="background: white; border-radius: 8px; padding: 25px; text-align: center;">
+                    <h2 style="color: #333; margin-bottom: 20px;">🎉 시험 완료!</h2>
+                    <div style="font-size: 3rem; font-weight: bold; color: #667eea; margin: 20px 0;" id="finalScore">0 / 10</div>
+                    <div style="font-size: 1.5rem; color: #666; margin-bottom: 30px;" id="finalAccuracy">정답률: 0%</div>
+
+                    <div id="wrongAnswersList" style="margin: 30px 0; text-align: left;"></div>
+
+                    <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-top: 30px;">
+                        <button onclick="retryWrongAnswers()" class="search-btn" style="padding: 12px 25px; background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);">
+                            틀린 문제 다시 풀기
+                        </button>
+                        <button onclick="goToWordQuiz()" class="search-btn" style="padding: 12px 25px;">
+                            새 시험 보기
+                        </button>
+                        <button onclick="goToWordStudy()" class="clear-btn" style="padding: 12px 25px;">
+                            단어 공부로
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 로딩/에러 -->
+            <div id="quizLoading" class="loading hidden">시험 문제를 생성하는 중입니다...</div>
+            <div id="quizError" class="error hidden"></div>
+        </div>
+
+    </div>
+
+    <script>
+        // DOM 요소들
+        const searchInput = document.getElementById('searchInput');
+        const searchType = document.getElementById('searchType');
+        const searchBtn = document.getElementById('searchBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const resultsSection = document.getElementById('resultsSection');
+        const resultsTitle = document.getElementById('resultsTitle');
+        const resultsCount = document.getElementById('resultsCount');
+        const resultsLoading = document.getElementById('resultsLoading');
+        const resultsError = document.getElementById('resultsError');
+        const bookGrid = document.getElementById('bookGrid');
+        const quizSection = document.getElementById('quizSection');
+        const quizLoading = document.getElementById('quizLoading');
+        const quizError = document.getElementById('quizError');
+        const quizList = document.getElementById('quizList');
+
+        // 통계 요소들
+        const totalBooks = document.getElementById('totalBooks');
+        const booksWithQuiz = document.getElementById('booksWithQuiz');
+        const totalQuizzes = document.getElementById('totalQuizzes');
+        const totalQuestions = document.getElementById('totalQuestions');
+        const statsLoading = document.getElementById('statsLoading');
+        const statsError = document.getElementById('statsError');
+
+        // 전역 상태
+        let currentUser = null;
+        let currentFilter = 'all';
+        let myBooksData = [];
+        let wordStudyData = {
+            words: [],
+            total: 0,
+            currentOffset: 0,
+            limit: 50,
+            sortBy: 'bt_level',
+            btLevel: 1.5,      // Single BT Level value
+            lexile: 300,       // Single Lexile value
+            tolerance: 0.2,    // Tolerance for finding similar level words (±0.2)
+            completionFilter: 'all' // 'all', 'completed', 'incomplete'
+        };
+
+        let wordQuizData = {
+            quizzes: [],
+            currentIndex: 0,
+            correctCount: 0,
+            answeredCount: 0,
+            userAnswers: [],
+            wrongQuestions: []
+        };
+
+        // 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            checkAuthStatus();
+        });
+
+        // 이벤트 리스너 설정
+        function setupEventListeners() {
+            searchBtn.addEventListener('click', handleSearch);
+            clearBtn.addEventListener('click', handleClear);
+
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    handleSearch();
+                }
+            });
+
+            // 검색어 입력 시 실시간 카운트 업데이트
+            searchInput.addEventListener('input', debounce(function() {
+                updateFilterCountWithQuery();
+            }, 300));
+        }
+
+        // Debounce 함수 (너무 자주 호출되지 않도록)
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+
+        // 검색 처리
+        async function handleSearch() {
+            const query = searchInput.value.trim();
+
+            // 검색어가 없으면 필터 조건으로 검색
+            if (!query) {
+                const count = parseInt(document.getElementById('countNumber').textContent || 0);
+                const filterCountVisible = document.getElementById('filterCount').style.display !== 'none';
+
+                if (filterCountVisible && count > 0 && count <= 500) {
+                    await browseByFilters();
+                } else if (filterCountVisible && count > 500) {
+                    alert('검색 결과가 500권을 초과합니다. 검색어를 입력하거나 필터 조건을 조정해주세요.');
+                } else {
+                    alert('검색어를 입력하거나 필터 조건을 설정해주세요.');
+                }
+                return;
+            }
+
+            await performSearch(query, searchType.value);
+        }
+
+        // 실제 검색 수행
+        async function performSearch(query, type) {
+            showLoading(true);
+            hideError();
+            hideQuizSection();
+
+            try {
+                // 필터 값 가져오기
+                const btLevelMin = parseFloat(document.getElementById('btLevelMin').value);
+                const btLevelMax = parseFloat(document.getElementById('btLevelMax').value);
+                const lexileMin = parseInt(document.getElementById('lexileMin').value);
+                const lexileMax = parseInt(document.getElementById('lexileMax').value);
+
+                // URL 파라미터 구성
+                let url = `/api/books/search?q=${encodeURIComponent(query)}&type=${type}`;
+
+                // 필터가 전체 범위가 아닌 경우에만 추가
+                if (btLevelMin > 0 || btLevelMax < 10) {
+                    url += `&btLevelMin=${btLevelMin}&btLevelMax=${btLevelMax}`;
+                }
+                if (lexileMin > 0 || lexileMax < 1500) {
+                    url += `&lexileMin=${lexileMin}&lexileMax=${lexileMax}`;
+                }
+                if (currentGenre !== 'all') {
+                    url += `&genre=${currentGenre}`;
+                }
+                if (currentQuizFilter === 'only') {
+                    url += `&hasQuiz=true`;
+                }
+                url += `&levelCondition=${currentLevelCondition}`;
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.success) {
+                    displayResults(data, query);
+                } else {
+                    throw new Error(data.message || '검색 실패');
+                }
+            } catch (error) {
+                console.error('검색 오류:', error);
+                showError('검색 중 오류가 발생했습니다: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // 검색 결과 표시
+        function displayResults(data, query) {
+            const books = data.data || [];
+            resultsTitle.textContent = `"${query}" 검색 결과`;
+            resultsCount.textContent = `${books.length}개 결과`;
+
+            if (books.length === 0) {
+                bookGrid.innerHTML = '<div style="text-align: center; padding: 40px; color: #666;">검색 결과가 없습니다.</div>';
+            } else {
+                bookGrid.innerHTML = books.map(book => createBookCard(book)).join('');
+            }
+
+            resultsSection.classList.remove('hidden');
+        }
+
+        // 도서 카드 생성 (검색 결과용 - 로그인 시 독서 상태 버튼 포함)
+        function createBookCard(book) {
+            // 로그인 시 독서 상태 버튼이 있는 카드 사용
+            if (currentUser) {
+                return createBookCardWithStatus(book, false);
+            }
+
+            // 비로그인 시 기본 카드
+            const hasQuiz = book.quiz == 1;
+            const imageUrl = book.image_url || `/bookimg/${book.isbn}.jpg`;
+
+            return `
+                <div class="book-card">
+                    <div class="book-image-container">
+                        <img
+                            src="${imageUrl}"
+                            alt="${escapeHtml(book.title || 'Book cover')}"
+                            class="book-image"
+                            onerror="this.parentElement.innerHTML='<div class=\\'book-image-placeholder\\'>📚</div>'"
+                        >
+                    </div>
+                    <div class="book-isbn">ISBN: ${escapeHtml(book.isbn)}</div>
+                    <div class="book-title">${escapeHtml(book.title || 'N/A')}</div>
+                    <div class="book-info">
+                        <span class="book-info-label">저자:</span>
+                        <span class="book-info-value">${escapeHtml(book.author || 'N/A')}</span>
+                        <span class="book-info-label">시리즈:</span>
+                        <span class="book-info-value">${escapeHtml(book.series || 'N/A')}</span>
+                        <span class="book-info-label">BT 레벨:</span>
+                        <span class="book-info-value">
+                            ${book.bt_level ? `<span class="ar-level">${book.bt_level}</span>` : 'N/A'}
+                        </span>
+                        <span class="book-info-label">Lexile:</span>
+                        <span class="book-info-value">${escapeHtml(book.lexile || 'N/A')}</span>
+                        <span class="book-info-label">퀴즈:</span>
+                        <span class="book-info-value">
+                            ${hasQuiz ? '<span class="quiz-available">✓ 있음</span>' : '없음'}
+                        </span>
+                    </div>
+                    <div class="book-actions">
+                        <button class="quiz-btn" onclick="loadQuizzes('${book.isbn}')" ${!hasQuiz ? 'disabled' : ''}>
+                            ${hasQuiz ? '퀴즈 보기' : '퀴즈 없음'}
+                        </button>
+                        <button class="words-btn" onclick="loadWords('${book.isbn}')" ${!book.has_words ? 'disabled' : ''}>
+                            ${book.has_words ? '단어 보기' : '단어 없음'}
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 슬라이드 패널 열기
+        function openSlidePanel(panelId) {
+            const overlay = document.getElementById('slidePanelOverlay');
+            const panel = document.getElementById(panelId);
+
+            overlay.classList.add('active');
+            setTimeout(() => {
+                panel.classList.add('active');
+            }, 10);
+
+            // body 스크롤 방지
+            document.body.style.overflow = 'hidden';
+        }
+
+        // 슬라이드 패널 닫기
+        function closeSlidePanel() {
+            const overlay = document.getElementById('slidePanelOverlay');
+            const panels = document.querySelectorAll('.slide-panel');
+
+            panels.forEach(panel => {
+                panel.classList.remove('active');
+            });
+
+            setTimeout(() => {
+                overlay.classList.remove('active');
+            }, 300);
+
+            // body 스크롤 복원
+            document.body.style.overflow = '';
+        }
+
+        // 퀴즈 모달 열기
+        function openQuizModal() {
+            const overlay = document.getElementById('quizModalOverlay');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // 퀴즈 모달 닫기
+        function closeQuizModal(event) {
+            // event가 있고 오버레이를 직접 클릭한 경우만 닫기
+            if (event && event.target.className !== 'quiz-modal-overlay active') {
+                return;
+            }
+
+            const overlay = document.getElementById('quizModalOverlay');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // 단어 로드
+        async function loadWords(isbn) {
+            const wordsContent = document.getElementById('wordsContent');
+            const wordsLoading = document.getElementById('wordsLoading');
+            const wordsError = document.getElementById('wordsError');
+            const subtitle = document.getElementById('wordsPanelSubtitle');
+
+            // 슬라이드 패널 열기
+            openSlidePanel('wordsPanel');
+            wordsLoading.style.display = 'block';
+            wordsError.style.display = 'none';
+            wordsContent.innerHTML = '';
+            subtitle.textContent = `ISBN: ${isbn}`;
+
+            try {
+                const response = await fetch(`/api/books/${isbn}/words`);
+                const data = await response.json();
+
+                if (data.success) {
+                    displayWords(data.data, isbn);
+                } else {
+                    throw new Error(data.message || '단어 로드 실패');
+                }
+            } catch (error) {
+                console.error('단어 로드 오류:', error);
+                wordsError.textContent = '단어를 불러올 수 없습니다: ' + error.message;
+                wordsError.style.display = 'block';
+            } finally {
+                wordsLoading.style.display = 'none';
+            }
+        }
+
+        // 단어 표시
+        function displayWords(data, isbn) {
+            const wordsContent = document.getElementById('wordsContent');
+            const { word_count, words } = data;
+
+            if (word_count === 0) {
+                wordsContent.innerHTML = `
+                    <div class="no-words">
+                        <p>이 책에 등록된 단어가 없습니다.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // 단어 목록 HTML 생성
+            const wordsHTML = words.map((word, index) => {
+                const hasDefinition = word.definition && word.definition.trim() !== '';
+                const levelInfo = [];
+                if (word.min_bt_level) levelInfo.push(`BT ${word.min_bt_level}`);
+                if (word.min_lexile) levelInfo.push(`Lexile ${word.min_lexile}`);
+                const levelText = levelInfo.length > 0 ? `<span style="color: #667eea; font-size: 0.85rem; font-weight: 500;">📊 ${levelInfo.join(' / ')}</span>` : '';
+
+                return `
+                    <div class="word-item">
+                        <div class="word-number">${index + 1}</div>
+                        <div class="word-content">
+                            <div class="word-text">
+                                ${escapeHtml(word.word)}
+                                ${levelText ? `<span style="margin-left: 10px;">${levelText}</span>` : ''}
+                            </div>
+                            ${hasDefinition ? `
+                                <div class="word-definition">
+                                    <strong>뜻:</strong> ${escapeHtml(word.definition)}
+                                </div>
+                            ` : ''}
+                            ${word.example_sentence ? `
+                                <div class="word-example">
+                                    <strong>예문:</strong> ${escapeHtml(word.example_sentence)}
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            wordsContent.innerHTML = `
+                <div class="words-list">
+                    ${wordsHTML}
+                </div>
+            `;
+
+            // 서브타이틀 업데이트
+            const subtitle = document.getElementById('wordsPanelSubtitle');
+            subtitle.textContent = `총 ${word_count}개의 단어`;
+        }
+
+        // 퀴즈 로드
+        async function loadQuizzes(isbn) {
+            const quizContent = document.getElementById('quizContent');
+            const quizLoading = document.getElementById('quizLoading');
+            const quizError = document.getElementById('quizError');
+            const subtitle = document.getElementById('quizModalSubtitle');
+
+            openQuizModal();
+            quizLoading.style.display = 'block';
+            quizError.style.display = 'none';
+            quizContent.innerHTML = '';
+            subtitle.textContent = `ISBN: ${isbn}`;
+
+            try {
+                const response = await fetch(`/api/books/${isbn}/quizzes`);
+                const data = await response.json();
+
+                if (data.success) {
+                    displayQuizzes(data);
+                } else {
+                    throw new Error(data.message || '퀴즈 로드 실패');
+                }
+            } catch (error) {
+                console.error('퀴즈 로드 오류:', error);
+                quizError.textContent = '퀴즈를 불러올 수 없습니다: ' + error.message;
+                quizError.style.display = 'block';
+            } finally {
+                quizLoading.style.display = 'none';
+            }
+        }
+
+        // 퀴즈 표시
+        function displayQuizzes(data) {
+            const { book, quizzes } = data;
+            const quizContent = document.getElementById('quizContent');
+            const subtitle = document.getElementById('quizModalSubtitle');
+
+            subtitle.textContent = `${book.title} - 총 ${quizzes.length}개의 퀴즈`;
+
+            if (quizzes.length === 0) {
+                quizContent.innerHTML = '<div style="text-align: center; padding: 40px; color: #666;">이 도서에 대한 퀴즈가 없습니다.</div>';
+            } else {
+                quizContent.innerHTML = `
+                    <div class="quizzes-list">
+                        ${quizzes.map(quiz => createQuizItem(quiz)).join('')}
+                    </div>
+                `;
+            }
+        }
+
+        // 퀴즈 아이템 생성
+        function createQuizItem(quiz) {
+            return `
+                <div class="quiz-item" data-question-id="${quiz.question_id}">
+                    <div class="quiz-number">문제 ${quiz.question_number}</div>
+                    <div class="quiz-question">${escapeHtml(quiz.question_text)}</div>
+                    <div class="quiz-choices">
+                        <div class="quiz-choice" data-choice="1" onclick="selectChoice(${quiz.question_id}, 1, ${quiz.correct_choice_number})">
+                            1. ${escapeHtml(quiz.choice_1)}
+                        </div>
+                        <div class="quiz-choice" data-choice="2" onclick="selectChoice(${quiz.question_id}, 2, ${quiz.correct_choice_number})">
+                            2. ${escapeHtml(quiz.choice_2)}
+                        </div>
+                        <div class="quiz-choice" data-choice="3" onclick="selectChoice(${quiz.question_id}, 3, ${quiz.correct_choice_number})">
+                            3. ${escapeHtml(quiz.choice_3)}
+                        </div>
+                        <div class="quiz-choice" data-choice="4" onclick="selectChoice(${quiz.question_id}, 4, ${quiz.correct_choice_number})">
+                            4. ${escapeHtml(quiz.choice_4)}
+                        </div>
+                    </div>
+                    <div class="quiz-result" id="result-${quiz.question_id}"></div>
+                    <div class="quiz-answer" id="answer-${quiz.question_id}">
+                        ✅ 정답: ${quiz.correct_choice_number}번 - ${escapeHtml(quiz.correct_answer)}
+                    </div>
+                </div>
+            `;
+        }
+
+        // 선택지 클릭 처리
+        function selectChoice(questionId, selectedChoice, correctChoice) {
+            const quizItem = document.querySelector(`[data-question-id="${questionId}"]`);
+            const choices = quizItem.querySelectorAll('.quiz-choice');
+            const resultDiv = document.getElementById(`result-${questionId}`);
+            const answerDiv = document.getElementById(`answer-${questionId}`);
+
+            // 이미 선택된 퀴즈인지 확인
+            if (quizItem.classList.contains('answered')) {
+                return;
+            }
+
+            // 모든 선택지 비활성화
+            choices.forEach(choice => {
+                choice.classList.add('disabled');
+                const choiceNum = parseInt(choice.dataset.choice);
+
+                // 선택한 선택지 표시
+                if (choiceNum === selectedChoice) {
+                    choice.classList.add('selected');
+                }
+
+                // 정답 표시
+                if (choiceNum === correctChoice) {
+                    choice.classList.add('correct');
+                } else if (choiceNum === selectedChoice && selectedChoice !== correctChoice) {
+                    choice.classList.add('incorrect');
+                }
+            });
+
+            // 결과 메시지 표시
+            let resultMessage = '';
+            let resultClass = '';
+
+            if (selectedChoice === correctChoice) {
+                resultMessage = '🎉 정답입니다!';
+                resultClass = 'correct';
+            } else {
+                resultMessage = '❌ 틀렸습니다. 정답을 확인해보세요.';
+                resultClass = 'incorrect';
+            }
+
+            resultDiv.textContent = resultMessage;
+            resultDiv.className = `quiz-result ${resultClass}`;
+
+            // 애니메이션으로 결과와 정답 표시
+            setTimeout(() => {
+                resultDiv.classList.add('show');
+            }, 100);
+
+            setTimeout(() => {
+                answerDiv.classList.add('show');
+            }, 300);
+
+            // 퀴즈를 답변 완료로 표시
+            quizItem.classList.add('answered');
+        }
+
+        // 초기화
+        function handleClear() {
+            searchInput.value = '';
+            searchType.value = 'all';
+
+            resultsSection.classList.add('hidden');
+            hideQuizSection();
+            hideError();
+
+            // 홈으로 이동
+            goToHome();
+        }
+
+        // 유틸리티 함수들
+        function showLoading(show) {
+            resultsLoading.classList.toggle('hidden', !show);
+        }
+
+        function showError(message) {
+            resultsError.textContent = message;
+            resultsError.classList.remove('hidden');
+        }
+
+        function hideError() {
+            resultsError.classList.add('hidden');
+        }
+
+        function showQuizLoading(show) {
+            quizLoading.classList.toggle('hidden', !show);
+        }
+
+        function showQuizError(message) {
+            quizError.textContent = message;
+            quizError.classList.remove('hidden');
+        }
+
+        function hideQuizError() {
+            quizError.classList.add('hidden');
+        }
+
+        function hideQuizSection() {
+            quizSection.classList.add('hidden');
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+
+        // ============================================
+        // 인증 관련 함수
+        // ============================================
+
+        async function checkAuthStatus() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showGuestControls();
+                showHomeScreen();
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/auth/me', {
+                    credentials: 'include',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    currentUser = data.user;
+                    showUserControls(currentUser);
+                    // 로그인 시 홈 화면 표시 (읽는 중 + 검색)
+                    await showHomeScreen();
+                } else {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    showGuestControls();
+                    showHomeScreen();
+                }
+            } catch (error) {
+                console.error('인증 상태 확인 오류:', error);
+                showGuestControls();
+                showHomeScreen();
+            }
+        }
+
+        function showUserControls(user) {
+            const authControls = document.getElementById('authControls');
+            authControls.innerHTML = `
+                <a href="#" onclick="showMyPage(); return false;" class="user-info" style="cursor: pointer; text-decoration: none;">👤 ${escapeHtml(user.username)}</a>
+                <button onclick="handleLogout()" class="auth-btn">로그아웃</button>
+            `;
+        }
+
+        function showGuestControls() {
+            const authControls = document.getElementById('authControls');
+            authControls.innerHTML = `
+                <a href="/auth.html" class="auth-btn">로그인 / 회원가입</a>
+            `;
+        }
+
+        async function handleLogout() {
+            try {
+                await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                currentUser = null;
+
+                showGuestControls();
+                showHomeScreen();
+                alert('로그아웃되었습니다.');
+            } catch (error) {
+                console.error('로그아웃 오류:', error);
+            }
+        }
+
+        // 홈 화면 표시
+        async function showHomeScreen() {
+            // 모든 섹션 숨기기
+            document.getElementById('myPageSection').classList.add('hidden');
+            document.getElementById('resultsSection').classList.add('hidden');
+            document.getElementById('quizSection').classList.add('hidden');
+
+            // 검색 섹션 항상 표시
+            document.getElementById('searchSection').classList.remove('hidden');
+
+            // 로그인 시 읽는 중 섹션 로드
+            if (currentUser) {
+                await loadReadingNow();
+            } else {
+                document.getElementById('readingNowSection').classList.add('hidden');
+            }
+
+            // 맨 위로 스크롤
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 홈으로 이동
+        function goToHome() {
+            showHomeScreen();
+        }
+
+        // ============================================
+        // 읽는 중 섹션
+        // ============================================
+
+        async function loadReadingNow() {
+            if (!currentUser) return;
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/reading/history?status=reading', {
+                    credentials: 'include',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.data.length > 0) {
+                    const readingNowGrid = document.getElementById('readingNowGrid');
+                    readingNowGrid.innerHTML = data.data.map(book => createCompactBookCard(book)).join('');
+                    document.getElementById('readingNowSection').classList.remove('hidden');
+                } else {
+                    document.getElementById('readingNowSection').classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('읽는 중인 책 로드 오류:', error);
+            }
+        }
+
+        // 컴팩트 북 카드 생성 (읽는 중 섹션용)
+        function createCompactBookCard(book) {
+            const hasQuiz = book.quiz == 1;
+            const imageUrl = book.image_url || `/bookimg/${book.isbn}.jpg`;
+            const currentStatus = book.status || 'reading';
+
+            return `
+                <div class="compact-book-card">
+                    <img
+                        src="${imageUrl}"
+                        alt="${escapeHtml(book.title || 'Book cover')}"
+                        class="compact-book-image"
+                        onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22120%22><rect width=%22200%22 height=%22120%22 fill=%22%23e9ecef%22/><text x=%2250%%22 y=%2250%%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2240%22>📚</text></svg>'"
+                    >
+                    <div class="compact-book-title">${escapeHtml(book.title || 'N/A')}</div>
+                    <div class="compact-status-buttons">
+                        <button class="compact-status-btn ${currentStatus === 'started' ? 'active' : ''}" onclick="updateReadingStatus('${book.isbn}', 'started', event)" title="읽기 시작">시작</button>
+                        <button class="compact-status-btn ${currentStatus === 'reading' ? 'active' : ''}" onclick="updateReadingStatus('${book.isbn}', 'reading', event)" title="읽는 중">진행</button>
+                        <button class="compact-status-btn ${currentStatus === 'completed' ? 'active' : ''}" onclick="updateReadingStatus('${book.isbn}', 'completed', event)" title="읽음">완료</button>
+                    </div>
+                    <div class="compact-action-buttons">
+                        <button class="compact-quiz-btn" onclick="loadQuizzes('${book.isbn}')" ${!hasQuiz ? 'disabled' : ''}>
+                            ${hasQuiz ? '퀴즈' : '퀴즈 없음'}
+                        </button>
+                        <button class="compact-words-btn" onclick="loadWords('${book.isbn}')" ${!book.has_words ? 'disabled' : ''}>
+                            ${book.has_words ? '단어' : '단어 없음'}
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ============================================
+        // 마이페이지
+        // ============================================
+
+        async function showMyPage() {
+            if (!currentUser) {
+                alert('로그인이 필요합니다.');
+                window.location.href = '/auth.html';
+                return;
+            }
+
+            // 모든 섹션 숨기기
+            document.getElementById('readingNowSection').classList.add('hidden');
+            document.getElementById('searchSection').classList.add('hidden');
+            document.getElementById('resultsSection').classList.add('hidden');
+            document.getElementById('quizSection').classList.add('hidden');
+
+            // 마이페이지 표시
+            document.getElementById('myPageSection').classList.remove('hidden');
+
+            await loadMyBooks();
+            await loadMyStats();
+
+            // 맨 위로 스크롤
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function loadMyBooks(status = null) {
+            if (!currentUser) return;
+
+            try {
+                const token = localStorage.getItem('token');
+                const url = status ? `/api/reading/history?status=${status}` : '/api/reading/history';
+
+                const response = await fetch(url, {
+                    credentials: 'include',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    myBooksData = data.data;
+                    displayMyBooks(myBooksData);
+                }
+            } catch (error) {
+                console.error('내 책 로드 오류:', error);
+            }
+        }
+
+        function displayMyBooks(books) {
+            const grid = document.getElementById('myBooksGrid');
+
+            if (books.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📚</div>
+                        <p>아직 독서 기록이 없습니다.</p>
+                        <p style="font-size: 0.9rem; margin-top: 10px;">책을 검색하고 독서 상태를 추가해보세요!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = books.map(book => createBookCardWithStatus(book, true)).join('');
+        }
+
+        async function loadMyStats() {
+            if (!currentUser) return;
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/reading/stats', {
+                    credentials: 'include',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    const stats = data.stats;
+                    document.getElementById('myStats').innerHTML = `
+                        <div class="stat-card" style="background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);">
+                            <div class="stat-number">${stats.started_count || 0}</div>
+                            <div class="stat-label">읽기 시작</div>
+                        </div>
+                        <div class="stat-card" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);">
+                            <div class="stat-number">${stats.reading_count || 0}</div>
+                            <div class="stat-label">읽는 중</div>
+                        </div>
+                        <div class="stat-card" style="background: linear-gradient(135deg, #28a745 0%, #218838 100%);">
+                            <div class="stat-number">${stats.completed_count || 0}</div>
+                            <div class="stat-label">읽음</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${stats.total_count || 0}</div>
+                            <div class="stat-label">전체</div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('통계 로드 오류:', error);
+            }
+        }
+
+        function filterMyBooks(status) {
+            currentFilter = status;
+
+            // 버튼 활성화 상태 업데이트
+            ['All', 'Started', 'Reading', 'Completed'].forEach(s => {
+                document.getElementById(`filter${s}`).classList.remove('active');
+            });
+            document.getElementById(`filter${status.charAt(0).toUpperCase() + status.slice(1)}`).classList.add('active');
+
+            if (status === 'all') {
+                displayMyBooks(myBooksData);
+            } else {
+                const filtered = myBooksData.filter(book => book.status === status);
+                displayMyBooks(filtered);
+            }
+        }
+
+        // ============================================
+        // 독서 상태 관리
+        // ============================================
+
+        async function updateReadingStatus(isbn, status, event) {
+            if (!currentUser) {
+                alert('로그인이 필요합니다.');
+                window.location.href = '/auth.html';
+                return;
+            }
+
+            const button = event.target;
+            const originalText = button.textContent;
+            button.disabled = true;
+            button.textContent = '저장 중...';
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/reading/status', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ isbn, status })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // 버튼 상태 업데이트
+                    const card = button.closest('.book-card, .compact-book-card');
+                    if (card) {
+                        const buttons = card.querySelectorAll('.status-btn, .compact-status-btn');
+                        buttons.forEach(btn => btn.classList.remove('active'));
+                        button.classList.add('active');
+                    }
+
+                    // 읽는 중 섹션 새로고침
+                    if (currentUser) {
+                        await loadReadingNow();
+                    }
+
+                    button.textContent = originalText;
+                    button.disabled = false;
+                } else {
+                    alert(data.message || '상태 업데이트에 실패했습니다.');
+                    button.textContent = originalText;
+                    button.disabled = false;
+                }
+            } catch (error) {
+                console.error('독서 상태 업데이트 오류:', error);
+                alert('독서 상태 업데이트 중 오류가 발생했습니다.');
+                button.textContent = originalText;
+                button.disabled = false;
+            }
+        }
+
+        // ============================================
+        // 책 카드 생성 (독서 상태 포함)
+        // ============================================
+
+        function createBookCardWithStatus(book, showDates = false) {
+            const hasQuiz = book.quiz == 1;
+            const imageUrl = book.image_url || `/bookimg/${book.isbn}.jpg`;
+            const currentStatus = book.status || null;
+
+            let statusBadge = '';
+            if (currentStatus) {
+                const statusLabels = {
+                    started: '읽기 시작',
+                    reading: '읽는 중',
+                    completed: '읽음'
+                };
+                statusBadge = `<div class="status-badge ${currentStatus}">${statusLabels[currentStatus]}</div>`;
+            }
+
+            let datesInfo = '';
+            if (showDates && currentStatus) {
+                const formatDate = (dateStr) => {
+                    if (!dateStr) return '-';
+                    const date = new Date(dateStr);
+                    return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
+                };
+
+                datesInfo = `
+                    <div class="reading-dates">
+                        ${book.started_at ? `📅 시작: ${formatDate(book.started_at)}` : ''}
+                        ${book.reading_at ? `<br>📖 읽는중: ${formatDate(book.reading_at)}` : ''}
+                        ${book.completed_at ? `<br>✅ 완료: ${formatDate(book.completed_at)}` : ''}
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="book-card">
+                    ${statusBadge}
+                    <div class="book-image-container">
+                        <img
+                            src="${imageUrl}"
+                            alt="${escapeHtml(book.title || 'Book cover')}"
+                            class="book-image"
+                            onerror="this.parentElement.innerHTML='<div class=\\'book-image-placeholder\\'>📚</div>'"
+                        >
+                    </div>
+                    <div class="book-isbn">ISBN: ${escapeHtml(book.isbn)}</div>
+                    <div class="book-title">${escapeHtml(book.title || 'N/A')}</div>
+                    <div class="book-info">
+                        <span class="book-info-label">저자:</span>
+                        <span class="book-info-value">${escapeHtml(book.author || 'N/A')}</span>
+                        <span class="book-info-label">시리즈:</span>
+                        <span class="book-info-value">${escapeHtml(book.series || 'N/A')}</span>
+                        <span class="book-info-label">BT 레벨:</span>
+                        <span class="book-info-value">
+                            ${book.bt_level ? `<span class="ar-level">${book.bt_level}</span>` : 'N/A'}
+                        </span>
+                        <span class="book-info-label">Lexile:</span>
+                        <span class="book-info-value">${escapeHtml(book.lexile || 'N/A')}</span>
+                        <span class="book-info-label">퀴즈:</span>
+                        <span class="book-info-value">
+                            ${hasQuiz ? '<span class="quiz-available">✓ 있음</span>' : '없음'}
+                        </span>
+                    </div>
+                    ${datesInfo}
+                    ${currentUser ? `
+                        <div class="reading-status-buttons">
+                            <button class="status-btn started ${currentStatus === 'started' ? 'active' : ''}" onclick="updateReadingStatus('${book.isbn}', 'started', event)">읽기 시작</button>
+                            <button class="status-btn reading ${currentStatus === 'reading' ? 'active' : ''}" onclick="updateReadingStatus('${book.isbn}', 'reading', event)">읽는 중</button>
+                            <button class="status-btn completed ${currentStatus === 'completed' ? 'active' : ''}" onclick="updateReadingStatus('${book.isbn}', 'completed', event)">읽음</button>
+                        </div>
+                    ` : ''}
+                    <div class="book-actions">
+                        <button class="quiz-btn" onclick="loadQuizzes('${book.isbn}')" ${!hasQuiz ? 'disabled' : ''}>
+                            ${hasQuiz ? '퀴즈 보기' : '퀴즈 없음'}
+                        </button>
+                        <button class="words-btn" onclick="loadWords('${book.isbn}')" ${!book.has_words ? 'disabled' : ''}>
+                            ${book.has_words ? '단어 보기' : '단어 없음'}
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 필터 상태 변수
+        let currentGenre = 'all';
+        let currentQuizFilter = 'all';
+        let currentLevelCondition = 'AND';
+
+        // 레벨 필터 함수들
+        function updateBTLevelRange() {
+            const minSlider = document.getElementById('btLevelMin');
+            const maxSlider = document.getElementById('btLevelMax');
+            const valuesDisplay = document.getElementById('btLevelValues');
+            const progress = document.getElementById('btLevelProgress');
+
+            let minValue = parseFloat(minSlider.value);
+            let maxValue = parseFloat(maxSlider.value);
+
+            // min이 max보다 크면 조정
+            if (minValue > maxValue) {
+                minSlider.value = maxValue;
+                minValue = maxValue;
+            }
+
+            valuesDisplay.textContent = `${minValue.toFixed(1)} ~ ${maxValue.toFixed(1)}`;
+
+            // 프로그레스 바 업데이트
+            const min = parseFloat(minSlider.min);
+            const max = parseFloat(minSlider.max);
+            const leftPercent = ((minValue - min) / (max - min)) * 100;
+            const rightPercent = ((maxValue - min) / (max - min)) * 100;
+            progress.style.left = leftPercent + '%';
+            progress.style.width = (rightPercent - leftPercent) + '%';
+
+            updateFilterCount();
+        }
+
+        function updateLexileRange() {
+            const minSlider = document.getElementById('lexileMin');
+            const maxSlider = document.getElementById('lexileMax');
+            const valuesDisplay = document.getElementById('lexileValues');
+            const progress = document.getElementById('lexileProgress');
+
+            let minValue = parseInt(minSlider.value);
+            let maxValue = parseInt(maxSlider.value);
+
+            // min이 max보다 크면 조정
+            if (minValue > maxValue) {
+                minSlider.value = maxValue;
+                minValue = maxValue;
+            }
+
+            valuesDisplay.textContent = `${minValue} ~ ${maxValue}`;
+
+            // 프로그레스 바 업데이트
+            const min = parseInt(minSlider.min);
+            const max = parseInt(minSlider.max);
+            const leftPercent = ((minValue - min) / (max - min)) * 100;
+            const rightPercent = ((maxValue - min) / (max - min)) * 100;
+            progress.style.left = leftPercent + '%';
+            progress.style.width = (rightPercent - leftPercent) + '%';
+
+            updateFilterCount();
+        }
+
+        function resetBTLevelFilter() {
+            document.getElementById('btLevelMin').value = 0;
+            document.getElementById('btLevelMax').value = 10;
+            updateBTLevelRange();
+        }
+
+        function resetLexileFilter() {
+            document.getElementById('lexileMin').value = 0;
+            document.getElementById('lexileMax').value = 1500;
+            updateLexileRange();
+        }
+
+        // 장르 필터
+        function setGenre(genre) {
+            currentGenre = genre;
+            document.getElementById('genreAll').classList.remove('active');
+            document.getElementById('genreFiction').classList.remove('active');
+            document.getElementById('genreNonfiction').classList.remove('active');
+
+            if (genre === 'all') {
+                document.getElementById('genreAll').classList.add('active');
+            } else if (genre === 'fiction') {
+                document.getElementById('genreFiction').classList.add('active');
+            } else {
+                document.getElementById('genreNonfiction').classList.add('active');
+            }
+
+            updateFilterCount();
+        }
+
+        // 퀴즈 필터
+        function setQuizFilter(filter) {
+            currentQuizFilter = filter;
+            document.getElementById('quizAll').classList.remove('active');
+            document.getElementById('quizOnly').classList.remove('active');
+
+            if (filter === 'all') {
+                document.getElementById('quizAll').classList.add('active');
+            } else {
+                document.getElementById('quizOnly').classList.add('active');
+            }
+
+            updateFilterCount();
+        }
+
+        // 레벨 조건 (AND/OR)
+        function setLevelCondition(condition) {
+            currentLevelCondition = condition;
+            document.getElementById('levelConditionAND').classList.remove('active');
+            document.getElementById('levelConditionOR').classList.remove('active');
+
+            if (condition === 'AND') {
+                document.getElementById('levelConditionAND').classList.add('active');
+            } else {
+                document.getElementById('levelConditionOR').classList.add('active');
+            }
+
+            updateFilterCount();
+        }
+
+        // 필터 카운트 업데이트
+        async function updateFilterCount() {
+            const btLevelMin = parseFloat(document.getElementById('btLevelMin').value);
+            const btLevelMax = parseFloat(document.getElementById('btLevelMax').value);
+            const lexileMin = parseInt(document.getElementById('lexileMin').value);
+            const lexileMax = parseInt(document.getElementById('lexileMax').value);
+
+            // 필터가 기본값이면 카운트 숨기기
+            if (btLevelMin === 0 && btLevelMax === 10 &&
+                lexileMin === 0 && lexileMax === 1500 &&
+                currentGenre === 'all' && currentQuizFilter === 'all') {
+                document.getElementById('filterCount').style.display = 'none';
+                return;
+            }
+
+            try {
+                let url = '/api/books/filter-count?';
+                const params = [];
+
+                if (btLevelMin > 0 || btLevelMax < 10) {
+                    params.push(`btLevelMin=${btLevelMin}&btLevelMax=${btLevelMax}`);
+                }
+                if (lexileMin > 0 || lexileMax < 1500) {
+                    params.push(`lexileMin=${lexileMin}&lexileMax=${lexileMax}`);
+                }
+                if (currentGenre !== 'all') {
+                    params.push(`genre=${currentGenre}`);
+                }
+                if (currentQuizFilter === 'only') {
+                    params.push(`hasQuiz=true`);
+                }
+                params.push(`levelCondition=${currentLevelCondition}`);
+
+                url += params.join('&');
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('countNumber').textContent = data.count;
+                    document.getElementById('filterCount').style.display = 'inline-flex';
+                }
+            } catch (error) {
+                console.error('필터 카운트 오류:', error);
+            }
+        }
+
+        // 검색어를 포함한 필터 카운트 업데이트
+        async function updateFilterCountWithQuery() {
+            const query = searchInput.value.trim();
+            const searchType = document.getElementById('searchType').value;
+            const btLevelMin = parseFloat(document.getElementById('btLevelMin').value);
+            const btLevelMax = parseFloat(document.getElementById('btLevelMax').value);
+            const lexileMin = parseInt(document.getElementById('lexileMin').value);
+            const lexileMax = parseInt(document.getElementById('lexileMax').value);
+
+            // 검색어가 없으면 기본 필터 카운트 사용
+            if (!query) {
+                updateFilterCount();
+                return;
+            }
+
+            // 필터가 모두 기본값이면 카운트 숨기기
+            const hasFilter = (btLevelMin > 0 || btLevelMax < 10 ||
+                             lexileMin > 0 || lexileMax < 1500 ||
+                             currentGenre !== 'all' || currentQuizFilter === 'only');
+
+            if (!hasFilter) {
+                document.getElementById('filterCount').style.display = 'none';
+                return;
+            }
+
+            try {
+                let url = `/api/books/search-count?q=${encodeURIComponent(query)}&type=${searchType}`;
+                const params = [];
+
+                if (btLevelMin > 0 || btLevelMax < 10) {
+                    params.push(`btLevelMin=${btLevelMin}&btLevelMax=${btLevelMax}`);
+                }
+                if (lexileMin > 0 || lexileMax < 1500) {
+                    params.push(`lexileMin=${lexileMin}&lexileMax=${lexileMax}`);
+                }
+                if (currentGenre !== 'all') {
+                    params.push(`genre=${currentGenre}`);
+                }
+                if (currentQuizFilter === 'only') {
+                    params.push(`hasQuiz=true`);
+                }
+                params.push(`levelCondition=${currentLevelCondition}`);
+
+                if (params.length > 0) {
+                    url += '&' + params.join('&');
+                }
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('countNumber').textContent = data.count;
+                    document.getElementById('filterCount').style.display = 'inline-flex';
+                }
+            } catch (error) {
+                console.error('검색 카운트 오류:', error);
+            }
+        }
+
+        // 필터 조건으로 직접 검색 (검색어 없이)
+        async function browseByFilters() {
+            const count = parseInt(document.getElementById('countNumber').textContent);
+
+            if (count === 0) {
+                showError('조건에 맞는 책이 없습니다.');
+                return;
+            }
+
+            if (count > 500) {
+                showError('검색 결과가 500권을 초과합니다. 검색어를 입력하거나 필터 조건을 조정해주세요.');
+                return;
+            }
+
+            showLoading(true);
+            hideError();
+
+            try {
+                const btLevelMin = parseFloat(document.getElementById('btLevelMin').value);
+                const btLevelMax = parseFloat(document.getElementById('btLevelMax').value);
+                const lexileMin = parseInt(document.getElementById('lexileMin').value);
+                const lexileMax = parseInt(document.getElementById('lexileMax').value);
+
+                let url = '/api/books/browse?';
+                const params = [];
+
+                if (btLevelMin > 0 || btLevelMax < 10) {
+                    params.push(`btLevelMin=${btLevelMin}&btLevelMax=${btLevelMax}`);
+                }
+                if (lexileMin > 0 || lexileMax < 1500) {
+                    params.push(`lexileMin=${lexileMin}&lexileMax=${lexileMax}`);
+                }
+                if (currentGenre !== 'all') {
+                    params.push(`genre=${currentGenre}`);
+                }
+                if (currentQuizFilter === 'only') {
+                    params.push(`hasQuiz=true`);
+                }
+                params.push(`levelCondition=${currentLevelCondition}`);
+
+                url += params.join('&');
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.success) {
+                    displayResults(data, '필터 조건');
+                } else {
+                    throw new Error(data.message || '조회 실패');
+                }
+            } catch (error) {
+                console.error('필터 조회 오류:', error);
+                showError('조회 중 오류가 발생했습니다: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // 글로벌 함수들 (HTML에서 호출)
+        window.loadQuizzes = loadQuizzes;
+        window.loadWords = loadWords;
+        window.closeWordsModal = closeWordsModal;
+        window.selectChoice = selectChoice;
+        window.showMyPage = showMyPage;
+        window.filterMyBooks = filterMyBooks;
+        window.updateReadingStatus = updateReadingStatus;
+        window.handleLogout = handleLogout;
+        window.goToHome = goToHome;
+        window.showHomeScreen = showHomeScreen;
+        window.updateBTLevelRange = updateBTLevelRange;
+        window.updateLexileRange = updateLexileRange;
+        window.resetBTLevelFilter = resetBTLevelFilter;
+        window.resetLexileFilter = resetLexileFilter;
+        window.setGenre = setGenre;
+        window.setQuizFilter = setQuizFilter;
+        window.setLevelCondition = setLevelCondition;
+        window.browseByFilters = browseByFilters;
+
+        // ===== 단어 학습 기능 =====
+        // wordStudyData는 전역 상태에서 선언됨
+
+        // 단어 공부하기 화면으로 이동
+        async function goToWordStudy() {
+            console.log('goToWordStudy called');
+            try {
+                // 모든 섹션 숨기기
+                const sections = ['searchSection', 'resultsSection', 'quizSection', 'myPageSection', 'wordQuizSection', 'readingNowSection'];
+                sections.forEach(id => {
+                    const elem = document.getElementById(id);
+                    if (elem) elem.classList.add('hidden');
+                });
+
+                document.getElementById('wordStudySection').classList.remove('hidden');
+
+                // 완료 필터 섹션 표시/숨김 (로그인 여부에 따라)
+                const completionFilterSection = document.getElementById('completionFilterSection');
+                if (completionFilterSection) {
+                    completionFilterSection.style.display = currentUser ? 'block' : 'none';
+                }
+
+                // 데이터 초기화
+                wordStudyData.words = [];
+                wordStudyData.currentOffset = 0;
+
+                // 단어 로드
+                await loadStudyWords();
+            } catch (error) {
+                console.error('goToWordStudy error:', error);
+                alert('단어 공부 페이지를 여는 중 오류가 발생했습니다: ' + error.message);
+            }
+        }
+
+        // 단어 정렬 기준 변경
+        async function changeWordSortBy(sortBy) {
+            wordStudyData.sortBy = sortBy;
+            wordStudyData.words = [];
+            wordStudyData.currentOffset = 0;
+
+            // 버튼 활성화 상태 변경
+            document.getElementById('sortByBT').classList.toggle('active', sortBy === 'bt_level');
+            document.getElementById('sortByLexile').classList.toggle('active', sortBy === 'lexile');
+
+            // 범위 섹션 표시/숨김
+            document.getElementById('btLevelRangeSection').style.display = sortBy === 'bt_level' ? 'block' : 'none';
+            document.getElementById('lexileRangeSection').style.display = sortBy === 'lexile' ? 'block' : 'none';
+
+            // 정렬 기준 표시 업데이트
+            document.getElementById('currentSortBy').textContent = sortBy === 'bt_level' ? 'BT Level' : 'Lexile';
+
+            // 단어 다시 로드
+            await loadStudyWords();
+        }
+
+        // BT Level 슬라이더 업데이트
+        async function updateStudyBTLevel() {
+            const value = parseFloat(document.getElementById('studyBTLevel').value);
+            wordStudyData.btLevel = value;
+            document.getElementById('studyBTLevelValue').textContent = `BT Level: ${value.toFixed(1)}`;
+
+            // 단어 다시 로드
+            wordStudyData.words = [];
+            wordStudyData.currentOffset = 0;
+            await loadStudyWords();
+        }
+
+        // Lexile 슬라이더 업데이트
+        async function updateStudyLexile() {
+            const value = parseInt(document.getElementById('studyLexile').value);
+            wordStudyData.lexile = value;
+            document.getElementById('studyLexileValue').textContent = `Lexile: ${value}`;
+
+            // 단어 다시 로드
+            wordStudyData.words = [];
+            wordStudyData.currentOffset = 0;
+            await loadStudyWords();
+        }
+
+        // 단어 로드
+        async function loadStudyWords() {
+            const wordStudyLoading = document.getElementById('wordStudyLoading');
+            const wordStudyError = document.getElementById('wordStudyError');
+            const wordCardsList = document.getElementById('wordCardsList');
+            const loadMoreContainer = document.getElementById('loadMoreContainer');
+
+            try {
+                // 로딩 표시
+                if (wordStudyData.currentOffset === 0) {
+                    wordStudyLoading.classList.remove('hidden');
+                    wordStudyError.classList.add('hidden');
+                    wordCardsList.innerHTML = '';
+                }
+
+                // URL 파라미터 구성 - 선택한 레벨부터 더 어려운 레벨까지
+                let url = `/api/words/study?sortBy=${wordStudyData.sortBy}&limit=${wordStudyData.limit}&offset=${wordStudyData.currentOffset}&completionFilter=${wordStudyData.completionFilter}`;
+
+                if (wordStudyData.sortBy === 'bt_level') {
+                    const btLevel = wordStudyData.btLevel;
+                    const range = wordStudyData.tolerance * 2; // 선택한 레벨부터 위로만 범위 적용
+                    url += `&btLevelMin=${btLevel}&btLevelMax=${btLevel + range}`;
+                } else {
+                    const lexile = wordStudyData.lexile;
+                    const range = 200; // Lexile은 선택한 레벨부터 위로 200 범위
+                    url += `&lexileMin=${lexile}&lexileMax=${lexile + range}`;
+                }
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.message || '단어를 불러오는데 실패했습니다.');
+                }
+
+                // 데이터 저장
+                wordStudyData.total = data.data.total;
+                wordStudyData.words = wordStudyData.words.concat(data.data.words);
+
+                // 통계 업데이트
+                document.getElementById('totalStudyWords').textContent = wordStudyData.total.toLocaleString();
+                document.getElementById('currentProgress').textContent = `${wordStudyData.words.length} / ${wordStudyData.total}`;
+
+                // 단어 카드 렌더링
+                renderWordCards(data.data.words, wordStudyData.currentOffset === 0);
+
+                // 더 보기 버튼 표시 여부
+                if (wordStudyData.words.length < wordStudyData.total) {
+                    loadMoreContainer.style.display = 'block';
+                } else {
+                    loadMoreContainer.style.display = 'none';
+                }
+
+                wordStudyLoading.classList.add('hidden');
+
+            } catch (error) {
+                console.error('단어 로드 오류:', error);
+                wordStudyLoading.classList.add('hidden');
+                wordStudyError.textContent = error.message;
+                wordStudyError.classList.remove('hidden');
+            }
+        }
+
+        // 더 보기
+        async function loadMoreWords() {
+            wordStudyData.currentOffset += wordStudyData.limit;
+            await loadStudyWords();
+        }
+
+        // 완료 상태 필터 변경
+        async function changeCompletionFilter(filter) {
+            wordStudyData.completionFilter = filter;
+            wordStudyData.words = [];
+            wordStudyData.currentOffset = 0;
+
+            // 버튼 활성화 상태 변경
+            document.getElementById('filterAll').classList.toggle('active', filter === 'all');
+            document.getElementById('filterIncomplete').classList.toggle('active', filter === 'incomplete');
+            document.getElementById('filterCompleted').classList.toggle('active', filter === 'completed');
+
+            // 단어 다시 로드
+            await loadStudyWords();
+        }
+
+        // 단어 완료 상태 토글
+        async function toggleWordCompletion(word, currentStatus) {
+            if (!currentUser) {
+                alert('로그인이 필요합니다.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/words/study/toggle', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        word: word,
+                        completed: !currentStatus
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // 현재 페이지 새로고침 (완료 상태 반영)
+                    wordStudyData.words = [];
+                    wordStudyData.currentOffset = 0;
+                    await loadStudyWords();
+                } else {
+                    throw new Error(data.message || '완료 상태를 변경하는데 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('완료 상태 토글 오류:', error);
+                alert('완료 상태를 변경하는 중 오류가 발생했습니다: ' + error.message);
+            }
+        }
+
+        // 단어 카드 렌더링
+        function renderWordCards(words, clearFirst = false) {
+            const wordCardsList = document.getElementById('wordCardsList');
+
+            if (clearFirst) {
+                wordCardsList.innerHTML = '';
+            }
+
+            const cardsHTML = words.map((word, index) => {
+                const hasDefinition = word.definition && word.definition.trim() !== '';
+                const levelInfo = [];
+                if (word.min_bt_level) levelInfo.push(`BT ${word.min_bt_level}`);
+                if (word.min_lexile) levelInfo.push(`Lexile ${word.min_lexile}`);
+                const levelText = levelInfo.length > 0 ? `<span style="color: #667eea; font-size: 0.85rem; font-weight: 500;">📊 ${levelInfo.join(' / ')}</span>` : '';
+
+                // 번호는 현재까지 로드된 전체 단어 수 기준 (1부터 시작)
+                const displayNumber = wordStudyData.words.length - words.length + index + 1;
+
+                // 완료 체크 버튼 (로그인한 경우에만)
+                const checkButton = currentUser ? `
+                    <button onclick="toggleWordCompletion('${escapeHtml(word.word)}', ${word.is_completed || false})"
+                            style="padding: 6px 12px; border-radius: 6px; border: 2px solid ${word.is_completed ? '#26a69a' : '#ddd'}; background: ${word.is_completed ? '#26a69a' : 'white'}; color: ${word.is_completed ? 'white' : '#666'}; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; min-width: 70px;">
+                        ${word.is_completed ? '✓ 완료' : '완료'}
+                    </button>
+                ` : '';
+
+                return `
+                    <div style="background: white; border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                            <div style="font-size: 0.9rem; color: #999; font-weight: bold; min-width: 40px;">
+                                #${displayNumber}
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 1.3rem; font-weight: bold; color: #333; margin-bottom: 5px;">
+                                    ${escapeHtml(word.word)}
+                                    ${levelText ? `<span style="margin-left: 10px;">${levelText}</span>` : ''}
+                                </div>
+                                ${hasDefinition ? `
+                                    <div style="color: #666; font-size: 0.95rem; line-height: 1.5; margin-top: 8px;">
+                                        <strong>뜻:</strong> ${escapeHtml(word.definition)}
+                                    </div>
+                                ` : ''}
+                                ${word.example_sentence ? `
+                                    <div style="color: #888; font-size: 0.9rem; line-height: 1.5; margin-top: 8px; font-style: italic;">
+                                        <strong>예문:</strong> ${escapeHtml(word.example_sentence)}
+                                    </div>
+                                ` : ''}
+                            </div>
+                            ${checkButton}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            wordCardsList.insertAdjacentHTML('beforeend', cardsHTML);
+        }
+
+        // 전역 함수로 등록
+        window.goToWordStudy = goToWordStudy;
+        window.changeWordSortBy = changeWordSortBy;
+        window.loadMoreWords = loadMoreWords;
+        window.changeCompletionFilter = changeCompletionFilter;
+        window.toggleWordCompletion = toggleWordCompletion;
+
+        // ===== 단어 시험 기능 =====
+        let quizData = {
+            quizzes: [],
+            currentIndex: 0,
+            correctCount: 0,
+            answeredCount: 0,
+            userAnswers: [],
+            wrongQuestions: []
+        };
+
+        // 단어 시험 화면으로 이동
+        async function goToWordQuiz() {
+            try {
+                // 모든 섹션 숨기기
+                const sections = ['searchSection', 'resultsSection', 'quizSection', 'myPageSection', 'wordStudySection', 'readingNowSection'];
+                sections.forEach(id => {
+                    const elem = document.getElementById(id);
+                    if (elem) elem.classList.add('hidden');
+                });
+
+                document.getElementById('wordQuizSection').classList.remove('hidden');
+
+                // 화면 초기화 - 설정 화면은 숨기고 바로 시작
+                document.getElementById('quizSetup')?.classList.add('hidden');
+                document.getElementById('quizProgress')?.classList.add('hidden');
+                document.getElementById('quizResult')?.classList.add('hidden');
+                document.getElementById('quizLoading')?.classList.remove('hidden');
+                document.getElementById('quizError')?.classList.add('hidden');
+
+                // 데이터 초기화
+                wordQuizData = {
+                    quizzes: [],
+                    currentIndex: 0,
+                    correctCount: 0,
+                    answeredCount: 0,
+                    userAnswers: [],
+                    wrongQuestions: []
+                };
+
+                // 공부했던 레벨로 자동 시작
+                await startQuizWithStudiedLevel();
+            } catch (error) {
+                console.error('goToWordQuiz error:', error);
+                alert('단어 시험 페이지를 여는 중 오류가 발생했습니다: ' + error.message);
+            }
+        }
+
+        // 공부했던 레벨로 시험 시작
+        async function startQuizWithStudiedLevel() {
+            try {
+                // 공부했던 레벨을 사용 (tolerance 적용)
+                const questionCount = 10; // 기본 10문제
+                let btLevelMin, btLevelMax;
+
+                if (wordStudyData.sortBy === 'bt_level') {
+                    const btLevel = wordStudyData.btLevel;
+                    const range = wordStudyData.tolerance * 2; // 단어 공부와 동일한 범위 사용
+                    btLevelMin = btLevel;
+                    btLevelMax = btLevel + range;
+                } else {
+                    // Lexile인 경우 해당 Lexile에 대응하는 대략적인 BT Level 사용
+                    const lexile = wordStudyData.lexile;
+                    // 간단한 매핑: Lexile 0-500 -> BT 0-3, 500-1000 -> BT 3-7, 1000+ -> BT 7+
+                    const estimatedBT = Math.min(10, lexile / 150);
+                    const tolerance = 0.2;
+                    btLevelMin = Math.max(0, estimatedBT - tolerance);
+                    btLevelMax = estimatedBT + tolerance;
+                }
+
+                const quizUrl = `/api/words/quiz?btLevelMin=${btLevelMin}&btLevelMax=${btLevelMax}&count=${questionCount}`;
+                console.log('📝 Quiz API 호출:', quizUrl);
+                console.log('📊 요청 파라미터:', { btLevelMin, btLevelMax, questionCount });
+
+                const response = await fetch(quizUrl);
+                const data = await response.json();
+
+                console.log('📥 Quiz API 응답:', data);
+
+                if (!data.success) {
+                    throw new Error(data.message || '시험 문제를 불러오는데 실패했습니다.');
+                }
+
+                // 서버 응답 구조: { success, data: { quizzes, totalQuestions, btLevelRange } }
+                const quizzes = data.data?.quizzes || data.quizzes; // 두 가지 구조 모두 지원
+
+                if (!quizzes || quizzes.length === 0) {
+                    throw new Error('해당 레벨의 단어가 충분하지 않습니다.');
+                }
+
+                wordQuizData.quizzes = quizzes;
+                wordQuizData.currentIndex = 0;
+
+                // 로딩 숨기고 시험 화면 표시
+                document.getElementById('quizLoading').classList.add('hidden');
+                document.getElementById('quizProgress').classList.remove('hidden');
+
+                // 첫 문제 표시
+                showQuestion();
+            } catch (error) {
+                console.error('startQuizWithStudiedLevel error:', error);
+                document.getElementById('quizLoading').classList.add('hidden');
+                document.getElementById('quizError').classList.remove('hidden');
+                document.getElementById('quizError').textContent = '시험 시작 중 오류가 발생했습니다: ' + error.message;
+            }
+        }
+
+        // 시험 시작 (구버전 - 설정 화면에서 시작할 때 사용)
+        async function startQuiz() {
+            const btLevelMin = parseFloat(document.getElementById('btLevelMin').value);
+            const btLevelMax = parseFloat(document.getElementById('btLevelMax').value);
+            const questionCount = parseInt(document.getElementById('questionCount').value);
+
+            if (btLevelMin > btLevelMax) {
+                alert('최소값이 최대값보다 클 수 없습니다.');
+                return;
+            }
+
+            // 화면 전환
+            document.getElementById('quizSetup').classList.add('hidden');
+            document.getElementById('quizLoading').classList.remove('hidden');
+
+            try {
+                const response = await fetch(`/api/words/quiz?btLevelMin=${btLevelMin}&btLevelMax=${btLevelMax}&count=${questionCount}`);
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.message || '시험 문제를 생성하는데 실패했습니다.');
+                }
+
+                wordQuizData.quizzes = data.data.quizzes;
+                wordQuizData.currentIndex = 0;
+                wordQuizData.correctCount = 0;
+                wordQuizData.answeredCount = 0;
+                wordQuizData.userAnswers = [];
+                wordQuizData.wrongQuestions = [];
+
+                // 시험 진행 화면으로 전환
+                document.getElementById('quizLoading').classList.add('hidden');
+                document.getElementById('quizProgress').classList.remove('hidden');
+
+                // 첫 문제 표시
+                showQuestion();
+
+            } catch (error) {
+                console.error('시험 생성 오류:', error);
+                document.getElementById('quizLoading').classList.add('hidden');
+                document.getElementById('quizError').textContent = error.message;
+                document.getElementById('quizError').classList.remove('hidden');
+            }
+        }
+
+        // 예문에서 정답 단어를 밑줄로 바꾸기
+        function hideAnswerInSentence(sentence, answer) {
+            if (!sentence || !answer) return sentence;
+
+            // 대소문자 구분 없이 단어의 모든 형태를 찾기 (단어 경계 포함)
+            // 's, 's, ed, ing 등의 변형도 고려
+            const wordPattern = answer.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // 특수문자 이스케이프
+            const regex = new RegExp(`\\b${wordPattern}(s|'s|'s|ed|ing)?\\b`, 'gi');
+
+            // 밑줄로 교체 (단어 길이만큼)
+            return sentence.replace(regex, (match) => {
+                return '_'.repeat(match.length);
+            });
+        }
+
+        // 문제 표시
+        function showQuestion() {
+            const quiz = wordQuizData.quizzes[wordQuizData.currentIndex];
+            const questionCard = document.getElementById('quizQuestionCard');
+
+            // 진행 상태 업데이트
+            document.getElementById('quizProgressText').textContent = `${wordQuizData.currentIndex + 1} / ${wordQuizData.quizzes.length}`;
+            document.getElementById('quizScoreText').textContent = `${wordQuizData.correctCount} / ${wordQuizData.answeredCount}`;
+            const accuracy = wordQuizData.answeredCount > 0 ? Math.round((wordQuizData.correctCount / wordQuizData.answeredCount) * 100) : 0;
+            document.getElementById('quizAccuracyText').textContent = `${accuracy}%`;
+
+            // 예문에서 정답 단어 숨기기
+            const hiddenSentence = hideAnswerInSentence(quiz.exampleSentence, quiz.correctAnswer);
+
+            // 문제 카드 HTML
+            const levelInfo = [];
+            if (quiz.btLevel) levelInfo.push(`BT ${quiz.btLevel}`);
+            if (quiz.lexile) levelInfo.push(`Lexile ${quiz.lexile}`);
+            const levelText = levelInfo.length > 0 ? `<div style="color: #999; font-size: 0.9rem; margin-bottom: 15px;">📊 ${levelInfo.join(' / ')}</div>` : '';
+
+            const choicesHTML = quiz.choices.map((choice, index) => `
+                <button onclick="answerQuestion('${escapeHtml(choice.word)}')"
+                        class="quiz-choice-btn"
+                        data-word="${escapeHtml(choice.word)}"
+                        style="width: 100%; padding: 15px; margin: 8px 0; background: white; border: 2px solid #ddd; border-radius: 8px; font-size: 1.1rem; cursor: pointer; text-align: left; transition: all 0.2s;"
+                        onmouseover="this.style.borderColor='#667eea'; this.style.background='#f8f9ff';"
+                        onmouseout="this.style.borderColor='#ddd'; this.style.background='white';">
+                    ${index + 1}. ${escapeHtml(choice.word)}
+                </button>
+            `).join('');
+
+            questionCard.innerHTML = `
+                <div style="margin-bottom: 20px;">
+                    <h3 style="color: #667eea; margin-bottom: 10px;">문제 ${quiz.questionNumber}</h3>
+                    ${levelText}
+                </div>
+
+                <div style="background: #f8f9ff; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <div style="margin-bottom: 15px;">
+                        <strong style="color: #333;">뜻:</strong>
+                        <div style="color: #666; margin-top: 8px; line-height: 1.6;">${escapeHtml(quiz.definition)}</div>
+                    </div>
+                    <div>
+                        <strong style="color: #333;">예문:</strong>
+                        <div style="color: #666; margin-top: 8px; line-height: 1.6; font-style: italic;">${escapeHtml(hiddenSentence)}</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 25px;">
+                    <h4 style="color: #333; margin-bottom: 15px;">위 뜻과 예문에 해당하는 단어를 선택하세요:</h4>
+                    ${choicesHTML}
+                </div>
+            `;
+        }
+
+        // 답안 선택
+        function answerQuestion(selectedWord) {
+            const quiz = wordQuizData.quizzes[wordQuizData.currentIndex];
+            const isCorrect = selectedWord === quiz.correctAnswer;
+
+            // 답안 기록
+            wordQuizData.userAnswers.push({
+                questionNumber: quiz.questionNumber,
+                selected: selectedWord,
+                correct: quiz.correctAnswer,
+                isCorrect: isCorrect,
+                quiz: quiz
+            });
+
+            wordQuizData.answeredCount++;
+            if (isCorrect) {
+                wordQuizData.correctCount++;
+            } else {
+                wordQuizData.wrongQuestions.push(wordQuizData.currentIndex);
+            }
+
+            // 선택한 버튼 하이라이트
+            const buttons = document.querySelectorAll('.quiz-choice-btn');
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                btn.style.cursor = 'not-allowed';
+                const word = btn.getAttribute('data-word');
+
+                if (word === quiz.correctAnswer) {
+                    btn.style.borderColor = '#26a69a';
+                    btn.style.background = '#e8f5e9';
+                    btn.style.fontWeight = 'bold';
+                } else if (word === selectedWord && !isCorrect) {
+                    btn.style.borderColor = '#f5576c';
+                    btn.style.background = '#ffebee';
+                }
+            });
+
+            // 1.5초 후 다음 문제로
+            setTimeout(() => {
+                wordQuizData.currentIndex++;
+
+                if (wordQuizData.currentIndex < wordQuizData.quizzes.length) {
+                    showQuestion();
+                } else {
+                    showResult();
+                }
+            }, 1500);
+        }
+
+        // 결과 표시
+        function showResult() {
+            document.getElementById('quizProgress').classList.add('hidden');
+            document.getElementById('quizResult').classList.remove('hidden');
+
+            const totalQuestions = wordQuizData.quizzes.length;
+            const correctCount = wordQuizData.correctCount;
+            const accuracy = Math.round((correctCount / totalQuestions) * 100);
+
+            document.getElementById('finalScore').textContent = `${correctCount} / ${totalQuestions}`;
+            document.getElementById('finalAccuracy').textContent = `정답률: ${accuracy}%`;
+
+            // 틀린 문제 표시
+            const wrongAnswersList = document.getElementById('wrongAnswersList');
+            if (wordQuizData.wrongQuestions.length > 0) {
+                const wrongHTML = wordQuizData.wrongQuestions.map(idx => {
+                    const answer = wordQuizData.userAnswers.find(a => a.questionNumber === wordQuizData.quizzes[idx].questionNumber);
+                    const quiz = answer.quiz;
+
+                    return `
+                        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #f5576c;">
+                            <div style="font-weight: bold; color: #333; margin-bottom: 10px;">문제 ${quiz.questionNumber}</div>
+                            <div style="color: #666; margin-bottom: 8px;"><strong>뜻:</strong> ${escapeHtml(quiz.definition)}</div>
+                            <div style="color: #f5576c; margin-bottom: 5px;">❌ 선택: <strong>${escapeHtml(answer.selected)}</strong></div>
+                            <div style="color: #26a69a;">✅ 정답: <strong>${escapeHtml(quiz.correctAnswer)}</strong></div>
+                        </div>
+                    `;
+                }).join('');
+
+                wrongAnswersList.innerHTML = `
+                    <h3 style="color: #333; margin-bottom: 15px;">틀린 문제 (${wordQuizData.wrongQuestions.length}개)</h3>
+                    ${wrongHTML}
+                `;
+            } else {
+                wrongAnswersList.innerHTML = `
+                    <div style="background: #e8f5e9; padding: 20px; border-radius: 8px; text-align: center; color: #26a69a; font-size: 1.2rem;">
+                        🎉 완벽합니다! 모든 문제를 맞췄습니다!
+                    </div>
+                `;
+            }
+        }
+
+        // 틀린 문제 다시 풀기
+        async function retryWrongAnswers() {
+            if (wordQuizData.wrongQuestions.length === 0) {
+                alert('틀린 문제가 없습니다!');
+                return;
+            }
+
+            // 틀린 문제만 추출
+            const wrongQuizzes = wordQuizData.wrongQuestions.map(idx => wordQuizData.quizzes[idx]);
+
+            // 새로운 퀴즈 데이터 설정
+            quizData = {
+                quizzes: wrongQuizzes,
+                currentIndex: 0,
+                correctCount: 0,
+                answeredCount: 0,
+                userAnswers: [],
+                wrongQuestions: []
+            };
+
+            // 시험 진행 화면으로 전환
+            document.getElementById('quizResult').classList.add('hidden');
+            document.getElementById('quizProgress').classList.remove('hidden');
+
+            // 첫 문제 표시
+            showQuestion();
+        }
+
+        // 전역 함수로 등록
+        window.goToWordQuiz = goToWordQuiz;
+        window.startQuiz = startQuiz;
+        window.answerQuestion = answerQuestion;
+        window.retryWrongAnswers = retryWrongAnswers;
+    </script>
+
+    <!-- 단어 모달 -->
+    <!-- 슬라이드 패널 오버레이 -->
+    <div id="slidePanelOverlay" class="slide-panel-overlay" onclick="closeSlidePanel()"></div>
+
+    <!-- 단어 슬라이드 패널 -->
+    <div id="wordsPanel" class="slide-panel">
+        <div class="slide-panel-header">
+            <div class="slide-panel-header-content">
+                <div>
+                    <h2 class="slide-panel-title">📚 단어 목록</h2>
+                    <p class="slide-panel-subtitle" id="wordsPanelSubtitle"></p>
+                </div>
+                <button class="slide-panel-close" onclick="closeSlidePanel()">&times;</button>
+            </div>
+        </div>
+        <div class="slide-panel-body">
+            <div id="wordsLoading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>단어 목록을 불러오는 중...</p>
+            </div>
+            <div id="wordsError" class="error-message" style="display: none;"></div>
+            <div id="wordsContent"></div>
+        </div>
+    </div>
+
+    <!-- 퀴즈 모달 -->
+    <div id="quizModalOverlay" class="quiz-modal-overlay" onclick="closeQuizModal(event)">
+        <div class="quiz-modal" onclick="event.stopPropagation()">
+            <div class="quiz-modal-header">
+                <div>
+                    <h2 class="quiz-modal-title">📝 퀴즈 목록</h2>
+                    <p class="quiz-modal-subtitle" id="quizModalSubtitle"></p>
+                </div>
+                <button class="quiz-modal-close" onclick="closeQuizModal()">&times;</button>
+            </div>
+            <div class="quiz-modal-body">
+                <div id="quizLoading" class="loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>퀴즈 목록을 불러오는 중...</p>
+                </div>
+                <div id="quizError" class="error-message" style="display: none;"></div>
+                <div id="quizContent"></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
