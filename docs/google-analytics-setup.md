@@ -1,6 +1,19 @@
-# Google Analytics Setup Guide
+# Google Analytics Setup Guide (DEPRECATED)
 
-This document provides step-by-step instructions for setting up and using Google Analytics 4 (GA4) in the Reading Turtle application.
+> **⚠️ DEPRECATED**: This document describes the old Google Analytics setup using direct gtag.js integration.
+>
+> **Please use the new Firebase Analytics setup instead**: See [firebase-analytics-setup.md](firebase-analytics-setup.md)
+>
+> **Why Firebase Analytics?**
+> - Works on Web, Android, and iOS with the same code
+> - Automatically integrates with Google Analytics 4
+> - Better suited for multi-platform Flutter apps
+>
+> This document is kept for reference only.
+
+---
+
+This document provides step-by-step instructions for setting up and using Google Analytics 4 (GA4) in the Reading Turtle application **using direct gtag.js** (Web only).
 
 ## Table of Contents
 
