@@ -391,53 +391,91 @@ netstat -an | grep 5432
 
 ## Production Deployment
 
-### Domain Configuration
+### Domain & Directory Structure
 
-**Production domains** (nginx reverse proxy):
-- `reading-turtle.com` → `http://127.0.0.1:8080` (Flutter web app)
-- `v2.reading-turtle.com` → `http://127.0.0.1:8090`
+**Directories**:
+- `/home/syrikx0/reading-turtle` → **Production** (stable releases)
+- `/home/syrikx0/reading-turtle-v2` → **Development** (active development)
 
-### Current Running Services
+**Domains** (nginx reverse proxy):
+- `reading-turtle.com` → Port 8080 → **Production** (`/home/syrikx0/reading-turtle`)
+- `v2.reading-turtle.com` → Port 8090 → **Development** (`/home/syrikx0/reading-turtle-v2`)
+
+**Ports**:
+- **8080**: Production Flutter web (reading-turtle)
+- **8090**: Development Flutter web (reading-turtle-v2)
+- **8010**: Backend API server (shared, runs from reading-turtle-v2)
+
+### Version Management
+
+**Current Version**: See `flutter/lib/core/constants/app_version.dart`
+
+**Version Update Process**:
+1. Before each production deployment, increment version in `app_version.dart`
+2. Use semantic versioning: `MAJOR.MINOR.PATCH` (e.g., 1.0.1 → 1.0.2)
+3. Version is displayed in Customer Support page footer
+
+**Version History**:
+- v1.0.1 - Interactive tutorials, splash/onboarding, monthly calendar (2025-11-16)
+
+### Deployment Workflow
+
+**Step-by-step process** when deploying to production:
+
+```bash
+# 1. Develop in reading-turtle-v2
+cd /home/syrikx0/reading-turtle-v2
+
+# 2. Update version in app_version.dart
+# Edit flutter/lib/core/constants/app_version.dart
+# Change version string (e.g., '1.0.1' → '1.0.2')
+
+# 3. Test on development server
+# Access v2.reading-turtle.com to verify changes
+
+# 4. Commit and push
+git add -A
+git commit -m "Release vX.X.X: Description"
+git push origin main
+
+# 5. Deploy to production
+cd /home/syrikx0/reading-turtle
+git stash  # Save any local changes
+git pull origin main
+cd flutter
+flutter pub get
+flutter pub run build_runner build --delete-conflicting-outputs
+flutter build web
+
+# 6. Verify deployment
+# Access reading-turtle.com
+# Check version in Customer Support page
+```
+
+### Server Management
 
 ```bash
 # Check running processes
 ps aux | grep "node.*server.js" | grep -v grep    # Node.js backend
-netstat -tlnp | grep ":8080"                       # Flutter web server
+netstat -tlnp | grep ":8080"                       # Production web server
+netstat -tlnp | grep ":8090"                       # Development web server
 netstat -tlnp | grep ":8010"                       # Backend API
 
-# Check process working directories
-pwdx <PID>
-```
-
-**Active services**:
-- **Port 8080**: Python HTTP server serving `/home/syrikx0/reading-turtle-v2/flutter/build/web`
-  - Command: `python3 -m http.server 8080 --bind 0.0.0.0`
-  - Purpose: Serves Flutter production build for reading-turtle.com
-
-- **Port 8010**: Node.js backend API server
-  - Command: `node server.js`
-  - Working directory: `/home/syrikx0/reading-turtle-v2`
-  - Logs: `server_latest.log`
-
-### Production Server Management
-
-```bash
-# Start Flutter web server (production)
-cd /home/syrikx0/reading-turtle-v2/flutter/build/web
-python3 -m http.server 8080 --bind 0.0.0.0 &
-
-# Stop Flutter web server
+# Start/Stop Flutter web servers
+## Production (port 8080)
+cd /home/syrikx0/reading-turtle/flutter/build/web
+nohup python3 -m http.server 8080 --bind 0.0.0.0 > /dev/null 2>&1 &
 pkill -f "python3 -m http.server 8080"
+
+## Development (port 8090)
+cd /home/syrikx0/reading-turtle-v2/flutter/build/web
+nohup python3 -m http.server 8090 --bind 0.0.0.0 > /dev/null 2>&1 &
+pkill -f "python3 -m http.server 8090"
 
 # Restart Node.js backend
 pkill -f "node.*server.js"
 cd /home/syrikx0/reading-turtle-v2
 node server.js > server_latest.log 2>&1 &
-
-# Deploy new Flutter build
-cd /home/syrikx0/reading-turtle-v2/flutter
-flutter build web
-# Then restart Python HTTP server (no restart needed if already running)
 
 # Check nginx configuration
 sudo nginx -T | grep -A 10 "reading-turtle.com"
