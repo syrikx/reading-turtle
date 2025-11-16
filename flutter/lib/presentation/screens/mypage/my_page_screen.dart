@@ -333,7 +333,6 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
           itemBuilder: (context, index) {
             return BookCard(
               book: books[index],
-              showStatusButtons: true,
               showDates: true,
             );
           },

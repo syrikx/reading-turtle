@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// User preference for book level display type
 enum LevelDisplayType {
-  btLevel,  // Display BT Level as "Lv."
+  btLevel,  // Display Level as "Lv."
   lexile,   // Display Lexile
 }
 

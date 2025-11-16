@@ -5,6 +5,7 @@ import 'package:reading_turtle/domain/entities/book.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/reading_status_provider.dart';
 import '../../widgets/book_card.dart';
+import '../../../core/utils/analytics_service.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -17,8 +18,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    // Track page view
+    AnalyticsService().trackPageView('home_screen');
+
     // Load reading books when screen initializes (if authenticated)
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final authState = ref.read(authProvider);
       if (authState.user != null) {
         ref.read(readingStatusProvider.notifier).loadHistory();
@@ -242,7 +246,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           itemBuilder: (context, index) {
             return BookCard(
               book: displayBooks[index],
-              showStatusButtons: true,
               showDates: false,
             );
           },

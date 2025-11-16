@@ -15,6 +15,16 @@ class StorageService {
     return _prefs.getString(key);
   }
 
+  // Save bool value
+  Future<bool> setBool(String key, bool value) async {
+    return await _prefs.setBool(key, value);
+  }
+
+  // Get bool value
+  bool? getBool(String key) {
+    return _prefs.getBool(key);
+  }
+
   // Remove value
   Future<bool> remove(String key) async {
     return await _prefs.remove(key);

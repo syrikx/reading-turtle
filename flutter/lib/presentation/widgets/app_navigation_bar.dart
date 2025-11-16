@@ -53,6 +53,14 @@ class AppNavigationBar extends ConsumerWidget implements PreferredSizeWidget {
                 onPressed: () => context.go('/search'),
               ),
 
+            // Reading Calendar
+            if (currentPath != '/reading-calendar' && currentPath != '/reading-calendar/monthly')
+              IconButton(
+                icon: const Icon(Icons.calendar_today),
+                tooltip: 'Reading Calendar',
+                onPressed: () => context.go('/reading-calendar'),
+              ),
+
             // User Menu or Login Button
             authState.maybeWhen(
               authenticated: (user) => PopupMenuButton<String>(

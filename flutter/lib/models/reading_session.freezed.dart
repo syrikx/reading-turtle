@@ -25,6 +25,7 @@ mixin _$ReadingSession {
   int get pagesRead => throw _privateConstructorUsedError;
   int get readingMinutes => throw _privateConstructorUsedError;
   String get notes => throw _privateConstructorUsedError;
+  String get status => throw _privateConstructorUsedError;
   String get isbn => throw _privateConstructorUsedError;
   String get title => throw _privateConstructorUsedError;
   String get author => throw _privateConstructorUsedError;
@@ -49,6 +50,7 @@ abstract class $ReadingSessionCopyWith<$Res> {
       int pagesRead,
       int readingMinutes,
       String notes,
+      String status,
       String isbn,
       String title,
       String author,
@@ -74,6 +76,7 @@ class _$ReadingSessionCopyWithImpl<$Res, $Val extends ReadingSession>
     Object? pagesRead = null,
     Object? readingMinutes = null,
     Object? notes = null,
+    Object? status = null,
     Object? isbn = null,
     Object? title = null,
     Object? author = null,
@@ -100,6 +103,10 @@ class _$ReadingSessionCopyWithImpl<$Res, $Val extends ReadingSession>
       notes: null == notes
           ? _value.notes
           : notes // ignore: cast_nullable_to_non_nullable
+              as String,
+      status: null == status
+          ? _value.status
+          : status // ignore: cast_nullable_to_non_nullable
               as String,
       isbn: null == isbn
           ? _value.isbn
@@ -139,6 +146,7 @@ abstract class _$$ReadingSessionImplCopyWith<$Res>
       int pagesRead,
       int readingMinutes,
       String notes,
+      String status,
       String isbn,
       String title,
       String author,
@@ -162,6 +170,7 @@ class __$$ReadingSessionImplCopyWithImpl<$Res>
     Object? pagesRead = null,
     Object? readingMinutes = null,
     Object? notes = null,
+    Object? status = null,
     Object? isbn = null,
     Object? title = null,
     Object? author = null,
@@ -188,6 +197,10 @@ class __$$ReadingSessionImplCopyWithImpl<$Res>
       notes: null == notes
           ? _value.notes
           : notes // ignore: cast_nullable_to_non_nullable
+              as String,
+      status: null == status
+          ? _value.status
+          : status // ignore: cast_nullable_to_non_nullable
               as String,
       isbn: null == isbn
           ? _value.isbn
@@ -222,6 +235,7 @@ class _$ReadingSessionImpl implements _ReadingSession {
       required this.pagesRead,
       required this.readingMinutes,
       required this.notes,
+      this.status = 'reading',
       required this.isbn,
       required this.title,
       required this.author,
@@ -242,6 +256,9 @@ class _$ReadingSessionImpl implements _ReadingSession {
   @override
   final String notes;
   @override
+  @JsonKey()
+  final String status;
+  @override
   final String isbn;
   @override
   final String title;
@@ -254,7 +271,7 @@ class _$ReadingSessionImpl implements _ReadingSession {
 
   @override
   String toString() {
-    return 'ReadingSession(sessionId: $sessionId, sessionDate: $sessionDate, pagesRead: $pagesRead, readingMinutes: $readingMinutes, notes: $notes, isbn: $isbn, title: $title, author: $author, img: $img, totalPages: $totalPages)';
+    return 'ReadingSession(sessionId: $sessionId, sessionDate: $sessionDate, pagesRead: $pagesRead, readingMinutes: $readingMinutes, notes: $notes, status: $status, isbn: $isbn, title: $title, author: $author, img: $img, totalPages: $totalPages)';
   }
 
   @override
@@ -271,6 +288,7 @@ class _$ReadingSessionImpl implements _ReadingSession {
             (identical(other.readingMinutes, readingMinutes) ||
                 other.readingMinutes == readingMinutes) &&
             (identical(other.notes, notes) || other.notes == notes) &&
+            (identical(other.status, status) || other.status == status) &&
             (identical(other.isbn, isbn) || other.isbn == isbn) &&
             (identical(other.title, title) || other.title == title) &&
             (identical(other.author, author) || other.author == author) &&
@@ -281,8 +299,19 @@ class _$ReadingSessionImpl implements _ReadingSession {
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(runtimeType, sessionId, sessionDate,
-      pagesRead, readingMinutes, notes, isbn, title, author, img, totalPages);
+  int get hashCode => Object.hash(
+      runtimeType,
+      sessionId,
+      sessionDate,
+      pagesRead,
+      readingMinutes,
+      notes,
+      status,
+      isbn,
+      title,
+      author,
+      img,
+      totalPages);
 
   @JsonKey(ignore: true)
   @override
@@ -306,6 +335,7 @@ abstract class _ReadingSession implements ReadingSession {
       required final int pagesRead,
       required final int readingMinutes,
       required final String notes,
+      final String status,
       required final String isbn,
       required final String title,
       required final String author,
@@ -325,6 +355,8 @@ abstract class _ReadingSession implements ReadingSession {
   int get readingMinutes;
   @override
   String get notes;
+  @override
+  String get status;
   @override
   String get isbn;
   @override
@@ -353,6 +385,7 @@ mixin _$ReadingSessionRequest {
   int? get pagesRead => throw _privateConstructorUsedError;
   int? get readingMinutes => throw _privateConstructorUsedError;
   String? get notes => throw _privateConstructorUsedError;
+  String get status => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -371,7 +404,8 @@ abstract class $ReadingSessionRequestCopyWith<$Res> {
       String sessionDate,
       int? pagesRead,
       int? readingMinutes,
-      String? notes});
+      String? notes,
+      String status});
 }
 
 /// @nodoc
@@ -393,6 +427,7 @@ class _$ReadingSessionRequestCopyWithImpl<$Res,
     Object? pagesRead = freezed,
     Object? readingMinutes = freezed,
     Object? notes = freezed,
+    Object? status = null,
   }) {
     return _then(_value.copyWith(
       isbn: null == isbn
@@ -415,6 +450,10 @@ class _$ReadingSessionRequestCopyWithImpl<$Res,
           ? _value.notes
           : notes // ignore: cast_nullable_to_non_nullable
               as String?,
+      status: null == status
+          ? _value.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as String,
     ) as $Val);
   }
 }
@@ -433,7 +472,8 @@ abstract class _$$ReadingSessionRequestImplCopyWith<$Res>
       String sessionDate,
       int? pagesRead,
       int? readingMinutes,
-      String? notes});
+      String? notes,
+      String status});
 }
 
 /// @nodoc
@@ -453,6 +493,7 @@ class __$$ReadingSessionRequestImplCopyWithImpl<$Res>
     Object? pagesRead = freezed,
     Object? readingMinutes = freezed,
     Object? notes = freezed,
+    Object? status = null,
   }) {
     return _then(_$ReadingSessionRequestImpl(
       isbn: null == isbn
@@ -475,6 +516,10 @@ class __$$ReadingSessionRequestImplCopyWithImpl<$Res>
           ? _value.notes
           : notes // ignore: cast_nullable_to_non_nullable
               as String?,
+      status: null == status
+          ? _value.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as String,
     ));
   }
 }
@@ -487,7 +532,8 @@ class _$ReadingSessionRequestImpl implements _ReadingSessionRequest {
       required this.sessionDate,
       this.pagesRead,
       this.readingMinutes,
-      this.notes});
+      this.notes,
+      this.status = 'reading'});
 
   factory _$ReadingSessionRequestImpl.fromJson(Map<String, dynamic> json) =>
       _$$ReadingSessionRequestImplFromJson(json);
@@ -502,10 +548,13 @@ class _$ReadingSessionRequestImpl implements _ReadingSessionRequest {
   final int? readingMinutes;
   @override
   final String? notes;
+  @override
+  @JsonKey()
+  final String status;
 
   @override
   String toString() {
-    return 'ReadingSessionRequest(isbn: $isbn, sessionDate: $sessionDate, pagesRead: $pagesRead, readingMinutes: $readingMinutes, notes: $notes)';
+    return 'ReadingSessionRequest(isbn: $isbn, sessionDate: $sessionDate, pagesRead: $pagesRead, readingMinutes: $readingMinutes, notes: $notes, status: $status)';
   }
 
   @override
@@ -520,13 +569,14 @@ class _$ReadingSessionRequestImpl implements _ReadingSessionRequest {
                 other.pagesRead == pagesRead) &&
             (identical(other.readingMinutes, readingMinutes) ||
                 other.readingMinutes == readingMinutes) &&
-            (identical(other.notes, notes) || other.notes == notes));
+            (identical(other.notes, notes) || other.notes == notes) &&
+            (identical(other.status, status) || other.status == status));
   }
 
   @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(
-      runtimeType, isbn, sessionDate, pagesRead, readingMinutes, notes);
+      runtimeType, isbn, sessionDate, pagesRead, readingMinutes, notes, status);
 
   @JsonKey(ignore: true)
   @override
@@ -549,7 +599,8 @@ abstract class _ReadingSessionRequest implements ReadingSessionRequest {
       required final String sessionDate,
       final int? pagesRead,
       final int? readingMinutes,
-      final String? notes}) = _$ReadingSessionRequestImpl;
+      final String? notes,
+      final String status}) = _$ReadingSessionRequestImpl;
 
   factory _ReadingSessionRequest.fromJson(Map<String, dynamic> json) =
       _$ReadingSessionRequestImpl.fromJson;
@@ -564,6 +615,8 @@ abstract class _ReadingSessionRequest implements ReadingSessionRequest {
   int? get readingMinutes;
   @override
   String? get notes;
+  @override
+  String get status;
   @override
   @JsonKey(ignore: true)
   _$$ReadingSessionRequestImplCopyWith<_$ReadingSessionRequestImpl>

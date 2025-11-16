@@ -7,17 +7,19 @@ import '../../domain/entities/book.dart';
 import '../providers/reading_status_provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/user_preferences_provider.dart';
+import 'pulsing_button_wrapper.dart';
+import '../../features/reading_calendar/widgets/add_reading_session_dialog.dart';
 
 class BookCard extends ConsumerStatefulWidget {
   final Book book;
-  final bool showStatusButtons;
   final bool showDates;
+  final bool animateButtons;
 
   const BookCard({
     super.key,
     required this.book,
-    this.showStatusButtons = false,
     this.showDates = false,
+    this.animateButtons = false,
   });
 
   @override
@@ -25,35 +27,6 @@ class BookCard extends ConsumerStatefulWidget {
 }
 
 class _BookCardState extends ConsumerState<BookCard> {
-  bool _isUpdating = false;
-
-  Future<void> _updateStatus(String status) async {
-    setState(() => _isUpdating = true);
-
-    try {
-      await ref.read(readingStatusProvider.notifier).updateStatus(
-            widget.book.isbn,
-            status,
-          );
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('독서 상태가 업데이트되었습니다: $status')),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('오류: ${e.toString()}')),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isUpdating = false);
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
@@ -157,103 +130,128 @@ class _BookCardState extends ConsumerState<BookCard> {
                   ),
                   const Spacer(),
 
-                  // Reading Status Buttons (if logged in and showStatusButtons)
-                  if (isLoggedIn && widget.showStatusButtons) ...[
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Expanded(
-                          child: _buildStatusButton(
-                            context,
-                            '읽는중',
-                            'reading',
-                            Colors.teal,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: _buildStatusButton(
-                            context,
-                            '완료',
-                            'completed',
-                            Colors.green,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                  ],
-
                   // Levels and Quiz Badge
                   Row(
                     children: [
                       // Show level based on user preference
                       _buildLevelBadge(),
                       if (hasQuiz) ...[
-                        GestureDetector(
-                          onTap: () => context.go('/quiz/${widget.book.isbn}'),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.green[100],
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.quiz,
-                                  size: 12,
-                                  color: Colors.green[900],
-                                ),
-                                const SizedBox(width: 2),
-                                Text(
-                                  'Quiz',
-                                  style: TextStyle(
-                                    fontSize: 10,
+                        PulsingButtonWrapper(
+                          animate: widget.animateButtons,
+                          child: GestureDetector(
+                            onTap: () => context.go('/quiz/${widget.book.isbn}'),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.green[100],
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.quiz,
+                                    size: 12,
                                     color: Colors.green[900],
-                                    fontWeight: FontWeight.bold,
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(width: 2),
+                                  Text(
+                                    'Quiz',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: Colors.green[900],
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
                         const SizedBox(width: 4),
                       ],
                       if (hasWords) ...[
-                        GestureDetector(
-                          onTap: () => context.go('/word-study/${widget.book.isbn}'),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.orange[100],
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.menu_book,
-                                  size: 12,
-                                  color: Colors.orange[900],
-                                ),
-                                const SizedBox(width: 2),
-                                Text(
-                                  'Words',
-                                  style: TextStyle(
-                                    fontSize: 10,
+                        PulsingButtonWrapper(
+                          animate: widget.animateButtons,
+                          child: GestureDetector(
+                            onTap: () => context.go('/word-study/${widget.book.isbn}'),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.orange[100],
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.menu_book,
+                                    size: 12,
                                     color: Colors.orange[900],
-                                    fontWeight: FontWeight.bold,
                                   ),
+                                  const SizedBox(width: 2),
+                                  Text(
+                                    'Words',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: Colors.orange[900],
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                      ],
+                      // 독서 기록 버튼 (로그인 시에만 표시)
+                      if (isLoggedIn) ...[
+                        MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: GestureDetector(
+                            onTap: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) => AddReadingSessionDialog(
+                                  book: widget.book,
                                 ),
-                              ],
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.teal[100],
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.edit_calendar,
+                                    size: 12,
+                                    color: Colors.teal[900],
+                                  ),
+                                  const SizedBox(width: 2),
+                                  Text(
+                                    '독서 기록',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: Colors.teal[900],
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -330,38 +328,5 @@ class _BookCardState extends ConsumerState<BookCard> {
     }
 
     return const SizedBox.shrink();
-  }
-
-  Widget _buildStatusButton(
-    BuildContext context,
-    String label,
-    String status,
-    Color color,
-  ) {
-    final isActive = widget.book.status == status;
-
-    return ElevatedButton(
-      onPressed: _isUpdating
-          ? null
-          : () => _updateStatus(status),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: isActive ? color : Colors.white,
-        foregroundColor: isActive ? Colors.white : color,
-        side: BorderSide(color: color, width: 1.5),
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-        minimumSize: const Size(0, 28),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(4),
-        ),
-        elevation: isActive ? 2 : 0,
-      ),
-      child: Text(
-        _isUpdating ? '...' : label,
-        style: const TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
   }
 }

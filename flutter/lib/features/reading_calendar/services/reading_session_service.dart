@@ -26,6 +26,32 @@ class ReadingSessionService {
     }
   }
 
+  /// Get reading sessions for a specific month
+  Future<List<ReadingSession>> getMonthSessions(int year, int month) async {
+    try {
+      final response = await _apiClient.get(
+        '/api/reading/calendar',
+        queryParameters: {
+          'year': year,
+          'month': month,
+        },
+      );
+
+      if (response.data['success'] == true) {
+        // The API returns sessions grouped by date
+        final sessionsData = response.data['sessions'] as List? ?? [];
+        final sessions = sessionsData
+            .map((json) => ReadingSession.fromJson(json))
+            .toList();
+        return sessions;
+      } else {
+        throw Exception(response.data['message'] ?? 'Failed to load sessions');
+      }
+    } on DioException catch (e) {
+      throw Exception('Network error: ${e.message}');
+    }
+  }
+
   /// Get sessions for a specific date
   Future<List<ReadingSession>> getDateSessions(String date) async {
     try {

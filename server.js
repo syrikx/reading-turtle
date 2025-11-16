@@ -575,38 +575,74 @@ app.get('/api/reading/stats', authenticateToken, async (req, res) => {
 app.get('/api/reading/calendar', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.userId;
+        const { year, month } = req.query;
 
         const client = await pool.connect();
 
-        // Query reading history with book information
-        const history = await client.query(`
-            SELECT
-                rh.history_id,
-                rh.isbn,
-                rh.status,
-                rh.started_at,
-                rh.reading_at,
-                rh.completed_at,
-                b.title,
-                b.author,
-                b.img,
-                b.pages as total_pages
-            FROM reading_history rh
-            JOIN books b ON rh.isbn = b.isbn
-            WHERE rh.user_id = $1
-            ORDER BY
-                CASE
-                    WHEN rh.started_at IS NOT NULL THEN rh.started_at
-                    ELSE rh.created_at
-                END DESC
-        `, [userId]);
+        // If year and month are provided, return reading sessions for that month
+        if (year && month) {
+            const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
+            const endDate = new Date(year, month, 0).getDate(); // Last day of month
+            const endDateStr = `${year}-${String(month).padStart(2, '0')}-${endDate}`;
 
-        client.release();
+            const sessions = await client.query(`
+                SELECT
+                    rs.session_id as "sessionId",
+                    rs.session_date as "sessionDate",
+                    rs.pages_read as "pagesRead",
+                    rs.reading_minutes as "readingMinutes",
+                    rs.notes,
+                    rs.status,
+                    rs.isbn,
+                    b.title,
+                    b.author,
+                    b.img,
+                    b.pages as "totalPages"
+                FROM reading_sessions rs
+                JOIN books b ON rs.isbn = b.isbn
+                WHERE rs.user_id = $1
+                    AND rs.session_date >= $2
+                    AND rs.session_date <= $3
+                ORDER BY rs.session_date DESC
+            `, [userId, startDate, endDateStr]);
 
-        res.json({
-            success: true,
-            history: history.rows
-        });
+            client.release();
+
+            res.json({
+                success: true,
+                sessions: sessions.rows
+            });
+        } else {
+            // Query reading history with book information
+            const history = await client.query(`
+                SELECT
+                    rh.history_id,
+                    rh.isbn,
+                    rh.status,
+                    rh.started_at,
+                    rh.reading_at,
+                    rh.completed_at,
+                    b.title,
+                    b.author,
+                    b.img,
+                    b.pages as total_pages
+                FROM reading_history rh
+                JOIN books b ON rh.isbn = b.isbn
+                WHERE rh.user_id = $1
+                ORDER BY
+                    CASE
+                        WHEN rh.started_at IS NOT NULL THEN rh.started_at
+                        ELSE rh.created_at
+                    END DESC
+            `, [userId]);
+
+            client.release();
+
+            res.json({
+                success: true,
+                history: history.rows
+            });
+        }
 
     } catch (error) {
         console.error('❌ 독서 캘린더 조회 오류:', error);
@@ -622,7 +658,7 @@ app.get('/api/reading/calendar', authenticateToken, async (req, res) => {
 app.post('/api/reading/session', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.userId;
-        const { isbn, sessionDate, pagesRead, readingMinutes, notes } = req.body;
+        const { isbn, sessionDate, pagesRead, readingMinutes, notes, status } = req.body;
 
         if (!isbn || !sessionDate) {
             return res.status(400).json({
@@ -633,40 +669,114 @@ app.post('/api/reading/session', authenticateToken, async (req, res) => {
 
         const client = await pool.connect();
 
-        // Check if session already exists
-        const existing = await client.query(
-            'SELECT session_id FROM reading_sessions WHERE user_id = $1 AND isbn = $2 AND session_date = $3',
-            [userId, isbn, sessionDate]
-        );
+        try {
+            await client.query('BEGIN');
 
-        let result;
-        if (existing.rows.length > 0) {
-            // Update existing session
-            result = await client.query(`
-                UPDATE reading_sessions
-                SET pages_read = $1,
-                    reading_minutes = $2,
-                    notes = $3,
-                    updated_at = CURRENT_TIMESTAMP
-                WHERE session_id = $4
-                RETURNING *
-            `, [pagesRead || 0, readingMinutes || 0, notes || '', existing.rows[0].session_id]);
-        } else {
-            // Insert new session
-            result = await client.query(`
-                INSERT INTO reading_sessions (user_id, isbn, session_date, pages_read, reading_minutes, notes)
-                VALUES ($1, $2, $3, $4, $5, $6)
-                RETURNING *
-            `, [userId, isbn, sessionDate, pagesRead || 0, readingMinutes || 0, notes || '']);
+            // Check if session already exists
+            const existing = await client.query(
+                'SELECT session_id FROM reading_sessions WHERE user_id = $1 AND isbn = $2 AND session_date = $3',
+                [userId, isbn, sessionDate]
+            );
+
+            let result;
+            if (existing.rows.length > 0) {
+                // Update existing session
+                result = await client.query(`
+                    UPDATE reading_sessions
+                    SET pages_read = $1,
+                        reading_minutes = $2,
+                        notes = $3,
+                        status = $4,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE session_id = $5
+                    RETURNING session_id, user_id, isbn, session_date, pages_read, reading_minutes, notes, status
+                `, [pagesRead || 0, readingMinutes || 0, notes || '', status || 'reading', existing.rows[0].session_id]);
+            } else {
+                // Insert new session
+                result = await client.query(`
+                    INSERT INTO reading_sessions (user_id, isbn, session_date, pages_read, reading_minutes, notes, status)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7)
+                    RETURNING session_id, user_id, isbn, session_date, pages_read, reading_minutes, notes, status
+                `, [userId, isbn, sessionDate, pagesRead || 0, readingMinutes || 0, notes || '', status || 'reading']);
+            }
+
+            const savedSession = result.rows[0];
+
+            // Update or create reading_history based on session status
+            const historyCheck = await client.query(
+                'SELECT history_id, status FROM reading_history WHERE user_id = $1 AND isbn = $2',
+                [userId, isbn]
+            );
+
+            if (historyCheck.rows.length > 0) {
+                // Update existing reading history
+                const currentStatus = historyCheck.rows[0].status;
+                const newStatus = savedSession.status;
+
+                if (newStatus === 'completed' && currentStatus !== 'completed') {
+                    // Mark as completed
+                    await client.query(`
+                        UPDATE reading_history
+                        SET status = 'completed',
+                            completed_at = CURRENT_TIMESTAMP,
+                            updated_at = CURRENT_TIMESTAMP
+                        WHERE user_id = $1 AND isbn = $2
+                    `, [userId, isbn]);
+                } else if (newStatus === 'reading' && currentStatus === 'completed') {
+                    // Revert from completed to reading
+                    await client.query(`
+                        UPDATE reading_history
+                        SET status = 'reading',
+                            completed_at = NULL,
+                            updated_at = CURRENT_TIMESTAMP
+                        WHERE user_id = $1 AND isbn = $2
+                    `, [userId, isbn]);
+                }
+            } else {
+                // Create new reading history entry
+                await client.query(`
+                    INSERT INTO reading_history (user_id, isbn, status, started_at, reading_at, completed_at)
+                    VALUES ($1, $2, $3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP,
+                            CASE WHEN $3 = 'completed' THEN CURRENT_TIMESTAMP ELSE NULL END)
+                `, [userId, isbn, savedSession.status]);
+            }
+
+            // Get book details to include in response
+            const bookResult = await client.query(
+                'SELECT title, author, img, pages FROM books WHERE isbn = $1',
+                [isbn]
+            );
+
+            await client.query('COMMIT');
+
+            // Convert snake_case to camelCase for Flutter
+            const book = bookResult.rows[0] || {};
+            const formattedSession = {
+                sessionId: savedSession.session_id,
+                sessionDate: savedSession.session_date,
+                pagesRead: savedSession.pages_read,
+                readingMinutes: savedSession.reading_minutes,
+                notes: savedSession.notes,
+                status: savedSession.status,
+                isbn: savedSession.isbn,
+                title: book.title || '',
+                author: book.author || '',
+                img: book.img || null,
+                totalPages: book.pages || null
+            };
+
+            res.json({
+                success: true,
+                session: formattedSession,
+                message: existing.rows.length > 0 ? '독서 기록이 수정되었습니다.' : '독서 기록이 추가되었습니다.'
+            });
+
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
         }
-
-        client.release();
-
-        res.json({
-            success: true,
-            session: result.rows[0],
-            message: existing.rows.length > 0 ? '독서 기록이 수정되었습니다.' : '독서 기록이 추가되었습니다.'
-        });
 
     } catch (error) {
         console.error('❌ 독서 세션 저장 오류:', error);

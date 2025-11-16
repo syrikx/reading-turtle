@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../providers/support_provider.dart';
+import '../../../core/constants/app_version.dart';
 
 class SupportListScreen extends ConsumerStatefulWidget {
   const SupportListScreen({super.key});
@@ -72,6 +73,23 @@ class _SupportListScreenState extends ConsumerState<SupportListScreen> {
         onPressed: () => context.go('/support/new'),
         icon: const Icon(Icons.add),
         label: const Text('문의하기'),
+      ),
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.grey[100],
+          border: Border(
+            top: BorderSide(color: Colors.grey[300]!, width: 0.5),
+          ),
+        ),
+        child: Text(
+          AppVersion.fullVersion,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 11,
+            color: Colors.grey[600],
+          ),
+        ),
       ),
     );
   }

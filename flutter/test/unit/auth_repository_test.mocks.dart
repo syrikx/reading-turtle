@@ -217,6 +217,28 @@ class MockStorageService extends _i1.Mock implements _i5.StorageService {
       )) as String?);
 
   @override
+  _i4.Future<bool> setBool(
+    String? key,
+    bool? value,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #setBool,
+          [
+            key,
+            value,
+          ],
+        ),
+        returnValue: _i4.Future<bool>.value(false),
+      ) as _i4.Future<bool>);
+
+  @override
+  bool? getBool(String? key) => (super.noSuchMethod(Invocation.method(
+        #getBool,
+        [key],
+      )) as bool?);
+
+  @override
   _i4.Future<bool> remove(String? key) => (super.noSuchMethod(
         Invocation.method(
           #remove,

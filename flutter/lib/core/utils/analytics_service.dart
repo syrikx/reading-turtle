@@ -21,6 +21,9 @@ class AnalyticsService {
   static void initialize() {
     _analytics = FirebaseAnalytics.instance;
     _observer = FirebaseAnalyticsObserver(analytics: _analytics!);
+
+    // Enable debug mode for immediate event visibility in Firebase Console
+    _analytics!.setAnalyticsCollectionEnabled(true);
   }
 
   /// Get the analytics observer for navigation tracking
@@ -134,8 +137,10 @@ class AnalyticsService {
     try {
       await _analytics?.logSearch(
         searchTerm: searchTerm,
-        numberOfItems: resultsCount,
-        contentType: 'book',
+        parameters: {
+          'content_type': 'book',
+          if (resultsCount != null) 'results_count': resultsCount,
+        },
       );
     } catch (e) {
       print('Error tracking book search: $e');

@@ -30,3 +30,10 @@ final selectedDateProvider = StateProvider<DateTime?>((ref) => null);
 
 // State provider for focused month (for calendar)
 final focusedMonthProvider = StateProvider<DateTime>((ref) => DateTime.now());
+
+// Provider for monthly reading sessions
+final monthlyReadingSessionsProvider =
+    FutureProvider.autoDispose.family<List<ReadingSession>, DateTime>((ref, date) async {
+  final service = ref.read(readingSessionServiceProvider);
+  return await service.getMonthSessions(date.year, date.month);
+});

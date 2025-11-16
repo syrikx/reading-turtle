@@ -1,0 +1,37 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Turtle body -->
+  <ellipse cx="256" cy="300" rx="120" ry="100" fill="#2E7D32"/>
+
+  <!-- Turtle shell -->
+  <ellipse cx="256" cy="280" rx="140" ry="120" fill="#43A047"/>
+
+  <!-- Shell pattern -->
+  <ellipse cx="256" cy="280" rx="100" ry="80" fill="#66BB6A"/>
+  <circle cx="230" cy="260" r="20" fill="#43A047"/>
+  <circle cx="280" cy="260" r="20" fill="#43A047"/>
+  <circle cx="256" cy="300" r="20" fill="#43A047"/>
+
+  <!-- Head -->
+  <circle cx="200" cy="250" r="40" fill="#2E7D32"/>
+
+  <!-- Eye -->
+  <circle cx="190" cy="240" r="8" fill="white"/>
+  <circle cx="190" cy="240" r="4" fill="black"/>
+
+  <!-- Book -->
+  <rect x="180" y="200" width="80" height="60" fill="#FFEB3B" stroke="#FBC02D" stroke-width="2"/>
+
+  <!-- Book pages -->
+  <line x1="220" y1="200" x2="220" y2="260" stroke="#FBC02D" stroke-width="2"/>
+  <line x1="185" y1="215" x2="255" y2="215" stroke="#FBC02D" stroke-width="1"/>
+  <line x1="185" y1="225" x2="255" y2="225" stroke="#FBC02D" stroke-width="1"/>
+  <line x1="185" y1="235" x2="255" y2="235" stroke="#FBC02D" stroke-width="1"/>
+  <line x1="185" y1="245" x2="255" y2="245" stroke="#FBC02D" stroke-width="1"/>
+
+  <!-- Legs -->
+  <ellipse cx="180" cy="360" rx="25" ry="15" fill="#2E7D32"/>
+  <ellipse cx="330" cy="360" rx="25" ry="15" fill="#2E7D32"/>
+
+  <!-- Tail -->
+  <ellipse cx="350" cy="320" rx="20" ry="12" fill="#2E7D32"/>
+</svg>

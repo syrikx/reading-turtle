@@ -11,6 +11,7 @@ class ReadingSession with _$ReadingSession {
     required int pagesRead,
     required int readingMinutes,
     required String notes,
+    @Default('reading') String status,
     required String isbn,
     required String title,
     required String author,
@@ -30,6 +31,7 @@ class ReadingSessionRequest with _$ReadingSessionRequest {
     int? pagesRead,
     int? readingMinutes,
     String? notes,
+    @Default('reading') String status,
   }) = _ReadingSessionRequest;
 
   factory ReadingSessionRequest.fromJson(Map<String, dynamic> json) =>

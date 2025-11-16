@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:table_calendar/table_calendar.dart';
-import 'package:intl/intl.dart';
-import '../../../models/reading_history.dart';
+import 'package:go_router/go_router.dart';
+import '../../../models/reading_session.dart';
 import '../providers/reading_session_provider.dart';
+import 'package:intl/intl.dart';
 
 class ReadingCalendarScreen extends ConsumerStatefulWidget {
   const ReadingCalendarScreen({super.key});
@@ -13,21 +13,28 @@ class ReadingCalendarScreen extends ConsumerStatefulWidget {
       _ReadingCalendarScreenState();
 }
 
-class _ReadingCalendarScreenState
-    extends ConsumerState<ReadingCalendarScreen> {
-  DateTime _focusedDay = DateTime.now();
-  CalendarFormat _calendarFormat = CalendarFormat.month;
+class _ReadingCalendarScreenState extends ConsumerState<ReadingCalendarScreen> {
+  DateTime _selectedDate = DateTime.now();
 
   @override
   Widget build(BuildContext context) {
-    final historyAsync = ref.watch(readingHistoryProvider);
+    final sessionsAsync = ref.watch(monthlyReadingSessionsProvider(_selectedDate));
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('독서 달력'),
+        title: const Text('독서 캘린더'),
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.calendar_month),
+            onPressed: () {
+              context.go('/reading-calendar/monthly');
+            },
+            tooltip: '월 캘린더 보기',
+          ),
+        ],
       ),
-      body: historyAsync.when(
+      body: sessionsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => Center(
           child: Column(
@@ -38,110 +45,90 @@ class _ReadingCalendarScreenState
               Text('오류: $error'),
               const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: () => ref.refresh(readingHistoryProvider),
+                onPressed: () => ref.refresh(monthlyReadingSessionsProvider(_selectedDate)),
                 child: const Text('다시 시도'),
               ),
             ],
           ),
         ),
-        data: (history) => _buildCalendarWithHistory(history),
+        data: (sessions) => _buildSessionsView(sessions),
       ),
     );
   }
 
-  Widget _buildCalendarWithHistory(List<ReadingHistory> history) {
-    // Create events map for calendar markers
-    final eventsMap = <DateTime, List<ReadingHistory>>{};
-
-    for (final item in history) {
-      if (item.startedAt != null) {
-        final startDate = DateTime.parse(item.startedAt!);
-        final dateKey = DateTime(startDate.year, startDate.month, startDate.day);
-        eventsMap.putIfAbsent(dateKey, () => []).add(item);
-      }
-    }
-
+  Widget _buildSessionsView(List<ReadingSession> sessions) {
     return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Calendar widget
-          Card(
-            margin: const EdgeInsets.all(8.0),
-            child: TableCalendar(
-              firstDay: DateTime.utc(2020, 1, 1),
-              lastDay: DateTime.utc(2030, 12, 31),
-              focusedDay: _focusedDay,
-              calendarFormat: _calendarFormat,
-              eventLoader: (day) {
-                final dateKey = DateTime(day.year, day.month, day.day);
-                return eventsMap[dateKey] ?? [];
-              },
-              onFormatChanged: (format) {
-                setState(() {
-                  _calendarFormat = format;
-                });
-              },
-              onPageChanged: (focusedDay) {
-                setState(() {
-                  _focusedDay = focusedDay;
-                });
-              },
-              calendarStyle: CalendarStyle(
-                todayDecoration: BoxDecoration(
-                  color: Colors.blue.shade200,
-                  shape: BoxShape.circle,
-                ),
-                markerDecoration: const BoxDecoration(
-                  color: Colors.green,
-                  shape: BoxShape.circle,
-                ),
-                markersMaxCount: 3,
-              ),
-              headerStyle: const HeaderStyle(
-                formatButtonVisible: true,
-                titleCentered: true,
-              ),
-            ),
-          ),
-
+          // Month selector
+          _buildMonthSelector(),
           const SizedBox(height: 16),
 
-          // Reading history list (like a timeline/agenda)
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '독서 기록',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-                const SizedBox(height: 16),
-                if (history.isEmpty)
-                  Center(
-                    child: Column(
-                      children: [
-                        Icon(
-                          Icons.book_outlined,
-                          size: 64,
-                          color: Colors.grey.shade300,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          '아직 독서 기록이 없습니다',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                      ],
+          // Stats card
+          _buildStatsCard(sessions),
+          const SizedBox(height: 24),
+
+          // Sessions list
+          const Text(
+            '📖 독서 기록',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          if (sessions.isEmpty)
+            Center(
+              child: Column(
+                children: [
+                  const SizedBox(height: 32),
+                  Icon(
+                    Icons.calendar_today,
+                    size: 64,
+                    color: Colors.grey.shade300,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    '이번 달 독서 기록이 없습니다',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey.shade600,
                     ),
-                  )
-                else
-                  ...history.map((item) => _buildHistoryCard(item)),
-              ],
+                  ),
+                ],
+              ),
+            )
+          else
+            ...sessions.map((session) => _buildSessionCard(session)),
+
+          const SizedBox(height: 24),
+
+          // Add session button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                // TODO: 책 선택 기능 추가 필요
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('책 검색 화면에서 "독서 기록" 버튼을 눌러 기록을 추가해주세요'),
+                    backgroundColor: Colors.orange,
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.teal,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              icon: const Icon(Icons.add_circle),
+              label: const Text(
+                '독서 기록 추가하기',
+                style: TextStyle(fontSize: 16),
+              ),
             ),
           ),
         ],
@@ -149,144 +136,169 @@ class _ReadingCalendarScreenState
     );
   }
 
-  Widget _buildHistoryCard(ReadingHistory item) {
-    final startDate = item.startedAt != null
-        ? DateTime.parse(item.startedAt!)
-        : null;
-    final completedDate = item.completedAt != null
-        ? DateTime.parse(item.completedAt!)
-        : null;
+  Widget _buildMonthSelector() {
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.chevron_left),
+              onPressed: () {
+                setState(() {
+                  _selectedDate = DateTime(
+                    _selectedDate.year,
+                    _selectedDate.month - 1,
+                  );
+                });
+              },
+            ),
+            Text(
+              '${_selectedDate.year}년 ${_selectedDate.month}월',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.chevron_right),
+              onPressed: () {
+                setState(() {
+                  _selectedDate = DateTime(
+                    _selectedDate.year,
+                    _selectedDate.month + 1,
+                  );
+                });
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-    String dateRange;
-    Color statusColor;
-    String statusText;
+  Widget _buildStatsCard(List<ReadingSession> sessions) {
+    final totalMinutes = sessions.fold<int>(
+      0,
+      (sum, session) => sum + session.readingMinutes,
+    );
 
-    if (item.status == 'completed' && startDate != null && completedDate != null) {
-      dateRange = '${DateFormat('M/d').format(startDate)} - ${DateFormat('M/d').format(completedDate)}';
-      statusColor = Colors.green;
-      statusText = '완료';
-    } else if (item.status == 'reading' && startDate != null) {
-      dateRange = '${DateFormat('M/d').format(startDate)} - 읽는 중';
-      statusColor = Colors.blue;
-      statusText = '읽는 중';
-    } else {
-      dateRange = item.startedAt != null
-          ? DateFormat('M/d').format(DateTime.parse(item.startedAt!))
-          : '날짜 미정';
-      statusColor = Colors.grey;
-      statusText = item.status;
-    }
+    // Count unique days with reading sessions
+    final uniqueDays = sessions.map((s) => s.sessionDate).toSet().length;
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 12.0),
+      elevation: 2,
+      color: Colors.teal[50],
       child: Padding(
-        padding: const EdgeInsets.all(12.0),
+        padding: const EdgeInsets.all(16),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Book cover
-            if (item.img != null && item.img!.isNotEmpty)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: Image.network(
-                  item.img!,
-                  width: 60,
-                  height: 85,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      width: 60,
-                      height: 85,
-                      color: Colors.grey.shade300,
-                      child: const Icon(Icons.book, size: 32),
-                    );
-                  },
-                ),
-              )
-            else
-              Container(
-                width: 60,
-                height: 85,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: const Icon(Icons.book, size: 32),
-              ),
-
-            const SizedBox(width: 12),
-
-            // Book info
             Expanded(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Title
                   Text(
-                    item.title,
-                    style: const TextStyle(
+                    '$uniqueDays일',
+                    style: TextStyle(
+                      fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                      color: Colors.teal[700],
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
-
-                  // Author
+                  const Text(
+                    '독서한 날',
+                    style: TextStyle(fontSize: 14),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              width: 1,
+              height: 40,
+              color: Colors.teal[200],
+            ),
+            Expanded(
+              child: Column(
+                children: [
                   Text(
-                    item.author,
+                    '$totalMinutes분',
                     style: TextStyle(
-                      color: Colors.grey.shade600,
-                      fontSize: 14,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.teal[700],
                     ),
                   ),
-                  const SizedBox(height: 8),
-
-                  // Date range
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.calendar_today,
-                        size: 14,
-                        color: Colors.grey.shade600,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        dateRange,
-                        style: TextStyle(
-                          color: Colors.grey.shade700,
-                          fontSize: 13,
-                        ),
-                      ),
-                      const Spacer(),
-                      // Status badge
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: statusColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: statusColor),
-                        ),
-                        child: Text(
-                          statusText,
-                          style: TextStyle(
-                            color: statusColor,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
+                  const SizedBox(height: 4),
+                  const Text(
+                    '총 독서 시간',
+                    style: TextStyle(fontSize: 14),
                   ),
                 ],
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildSessionCard(ReadingSession session) {
+    final date = DateTime.parse(session.sessionDate);
+
+    return Card(
+      elevation: 1,
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        leading: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: Colors.teal[100],
+            borderRadius: BorderRadius.circular(8),
+          ),
+          alignment: Alignment.center,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '${date.day}',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.teal[700],
+                ),
+              ),
+              Text(
+                '${date.month}월',
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Colors.teal[600],
+                ),
+              ),
+            ],
+          ),
+        ),
+        title: Text(
+          session.title,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: Text('${session.readingMinutes}분 독서 • ${session.pagesRead}쪽'),
+        trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+        onTap: () {
+          // TODO: Navigate to session detail/edit screen
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${session.title} 상세보기'),
+              backgroundColor: Colors.teal,
+            ),
+          );
+        },
       ),
     );
   }

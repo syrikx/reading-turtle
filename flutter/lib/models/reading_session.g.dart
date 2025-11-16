@@ -13,6 +13,7 @@ _$ReadingSessionImpl _$$ReadingSessionImplFromJson(Map<String, dynamic> json) =>
       pagesRead: (json['pagesRead'] as num).toInt(),
       readingMinutes: (json['readingMinutes'] as num).toInt(),
       notes: json['notes'] as String,
+      status: json['status'] as String? ?? 'reading',
       isbn: json['isbn'] as String,
       title: json['title'] as String,
       author: json['author'] as String,
@@ -28,6 +29,7 @@ Map<String, dynamic> _$$ReadingSessionImplToJson(
       'pagesRead': instance.pagesRead,
       'readingMinutes': instance.readingMinutes,
       'notes': instance.notes,
+      'status': instance.status,
       'isbn': instance.isbn,
       'title': instance.title,
       'author': instance.author,
@@ -43,6 +45,7 @@ _$ReadingSessionRequestImpl _$$ReadingSessionRequestImplFromJson(
       pagesRead: (json['pagesRead'] as num?)?.toInt(),
       readingMinutes: (json['readingMinutes'] as num?)?.toInt(),
       notes: json['notes'] as String?,
+      status: json['status'] as String? ?? 'reading',
     );
 
 Map<String, dynamic> _$$ReadingSessionRequestImplToJson(
@@ -53,4 +56,5 @@ Map<String, dynamic> _$$ReadingSessionRequestImplToJson(
       'pagesRead': instance.pagesRead,
       'readingMinutes': instance.readingMinutes,
       'notes': instance.notes,
+      'status': instance.status,
     };

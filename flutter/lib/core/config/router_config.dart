@@ -15,18 +15,59 @@ import '../../presentation/screens/quiz/wrong_answers_list_screen.dart';
 import '../../presentation/screens/support/support_list_screen.dart';
 import '../../presentation/screens/support/support_detail_screen.dart';
 import '../../presentation/screens/support/support_form_screen.dart';
+import '../../presentation/screens/splash/splash_screen.dart';
+import '../../presentation/screens/onboarding/onboarding_screen.dart';
+import '../../presentation/screens/tutorial/search_tutorial_screen.dart';
+import '../../presentation/screens/tutorial/quiz_tutorial_screen.dart';
+import '../../presentation/screens/tutorial/words_tutorial_screen.dart';
+import '../../presentation/screens/tutorial/calendar_tutorial_screen.dart';
 import '../../features/reading_calendar/screens/reading_calendar_screen.dart';
+import '../../features/reading_calendar/screens/monthly_calendar_screen.dart';
 import '../../presentation/providers/auth_provider.dart';
 import '../../presentation/widgets/scaffold_with_nav_bar.dart';
+import '../constants/storage_keys.dart';
+
+// Router refresh notifier to prevent "ref after disposed" errors
+class RouterNotifier extends ChangeNotifier {
+  final Ref _ref;
+
+  RouterNotifier(this._ref) {
+    _ref.listen(authProvider, (_, __) {
+      notifyListeners();
+    });
+  }
+}
+
+final routerNotifierProvider = Provider<RouterNotifier>((ref) {
+  return RouterNotifier(ref);
+});
+
+// Provider to check if user has seen onboarding
+final hasSeenOnboardingProvider = FutureProvider<bool>((ref) async {
+  final storageService = ref.read(storageServiceProvider);
+  return await storageService.getBool(StorageKeys.hasSeenOnboarding) ?? false;
+});
+
+// Provider to track initialization state
+final isInitializingProvider = StateProvider<bool>((ref) => true);
 
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authProvider);
+  final notifier = ref.watch(routerNotifierProvider);
 
   return GoRouter(
-    initialLocation: '/',
-    redirect: (context, state) {
+    refreshListenable: notifier,
+    initialLocation: '/splash',
+    redirect: (context, state) async {
+      final authState = ref.read(authProvider);
       final isAuthenticated = authState.user != null;
       final isAuthRoute = state.matchedLocation.startsWith('/auth');
+      final isSplashRoute = state.matchedLocation == '/splash';
+      final isOnboardingRoute = state.matchedLocation == '/onboarding';
+
+      // Allow splash and onboarding routes
+      if (isSplashRoute || isOnboardingRoute) {
+        return null;
+      }
 
       // If authenticated and trying to access auth route, redirect to home
       if (isAuthenticated && isAuthRoute) {
@@ -161,6 +202,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
+      // Reading calendar monthly view (without navigation bar)
+      GoRoute(
+        path: '/reading-calendar/monthly',
+        builder: (context, state) => const MonthlyCalendarScreen(),
+      ),
       // Support routes without navigation bar
       GoRoute(
         path: '/support',
@@ -192,6 +238,32 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/auth/signup',
         builder: (context, state) => const SignUpScreen(),
+      ),
+      // Splash and onboarding routes
+      GoRoute(
+        path: '/splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
+      GoRoute(
+        path: '/onboarding',
+        builder: (context, state) => const OnboardingScreen(),
+      ),
+      // Tutorial routes (without navigation bar)
+      GoRoute(
+        path: '/tutorial/search',
+        builder: (context, state) => const SearchTutorialScreen(),
+      ),
+      GoRoute(
+        path: '/tutorial/quiz',
+        builder: (context, state) => const QuizTutorialScreen(),
+      ),
+      GoRoute(
+        path: '/tutorial/words',
+        builder: (context, state) => const WordsTutorialScreen(),
+      ),
+      GoRoute(
+        path: '/tutorial/calendar',
+        builder: (context, state) => const CalendarTutorialScreen(),
       ),
     ],
   );
